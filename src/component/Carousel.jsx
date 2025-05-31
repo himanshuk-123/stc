@@ -3,14 +3,17 @@ import { View, Image, Dimensions, StyleSheet, ActivityIndicator } from 'react-na
 import Carousel from 'react-native-reanimated-carousel';
 // import ApiService, { IMAGE_BASE_URL } from '../services/commonServices';
 
+
 // import COMMON_SERVICE, { IMAGE_BASE_URL } from '../services/commonServices';
 import ApiService, { IMAGE_BASE_URL } from '../services/authService';
-const { width } = Dimensions.get('window');
+const screenWidth = Dimensions.get("window").width;
+import { moderateScale, horizontalScale, verticalScale } from '../utils/responsive';
 
-const CarouselComponent = () => {
+const CarouselComponent = ({width, height}) => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const cardWidth = width;
+  const cardHeight = height;
   useEffect(() => {
     const fetchSliderData = async () => {
       try {
@@ -43,7 +46,7 @@ const CarouselComponent = () => {
   return (
     <View style={styles.container}>
       <Carousel
-        width={width - 40}
+        width={screenWidth-40}
         height={150}
         autoPlay
         autoPlayInterval={3000}

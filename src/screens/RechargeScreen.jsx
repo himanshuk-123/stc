@@ -4,41 +4,51 @@ import Header from '../component/Header';
 import Cards from '../component/cards';
 import mobile_recharge from '../../assets/mobile_recharge.png';
 import GradientLayout from '../component/GradientLayout';
+import { horizontalScale, verticalScale } from '../utils/responsive';
 
 const DATA = [
-  { id: '1', title: 'Mobile Recharge', image: mobile_recharge,navigateTo:'MobileRechargeScreen' },
-  { id: '2', title: 'DTH Recharge', image: mobile_recharge,navigateTo:'DTHRechargeScreen'},
+  { id: '1', title: 'Mobile Recharge', image: mobile_recharge, navigateTo:'MobileRecharge' },
+  { id: '2', title: 'DTH Recharge', image: mobile_recharge, navigateTo:'DTHRecharge'},
   { id: '3', title: 'Metro Card', image: mobile_recharge },
   { id: '4', title: 'FASTag', image: mobile_recharge },
 ];
 
 const RechargeScreen = () => {
+  // Calculate responsive dimensions
+  const cardHeight = verticalScale(130);
+  const cardWidth = "48%";
+
   return (
     <GradientLayout>
-    <SafeAreaView className=" px-4 pt-4">
-      <Header headingTitle="Recharges" />
-      <FlatList
-  data={DATA}
-  numColumns={2}
-  keyExtractor={(item) => item.id}
-  columnWrapperStyle={{
-    justifyContent: 'flex-start',
-    marginBottom: 16,
-  }}
-  renderItem={({ item }) => (
-    <Cards
-      imageSource={item.image}
-      title={item.title}
-      height={130}
-      width={150} 
-      gradientColors={['#ffffff', '#ffffff']}
-      navigateTo={item.navigateTo}
-    />
-  )}
-/>
-    </SafeAreaView>
+      <SafeAreaView style={{
+        paddingHorizontal: horizontalScale(16),
+        paddingTop: verticalScale(16)
+      }}>
+        <Header headingTitle="Recharges" />
+        <FlatList
+          data={DATA}
+          numColumns={2}
+          keyExtractor={(item) => item.id}
+          columnWrapperStyle={{
+            justifyContent: 'space-between',
+            marginBottom: verticalScale(16),
+          }}
+          renderItem={({ item }) => (
+            <Cards
+              imageSource={item.image}
+              title={item.title}
+              height={cardHeight}
+              width={cardWidth}
+              imgheight={verticalScale(60)}
+              imgwidth={horizontalScale(60)} 
+              gradientColors={['#ffffff', '#ffffff']}
+              navigateTo={item.navigateTo}
+              cardsPerRow={2}
+            />
+          )}
+        />
+      </SafeAreaView>
     </GradientLayout>
-    
   );
 };
 

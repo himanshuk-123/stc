@@ -1,3 +1,4 @@
+import axios from 'axios';
 import api from './api'
 
 const RechargeApiServices = {
@@ -9,9 +10,9 @@ const RechargeApiServices = {
     api.post('/Commission', {
       Tokenid, Version, Location
     }),
-  RechargeCall: (Tokenid, UserID, RefTxnId, MobileNo, Operator, CricleId, Amount, Pin, CircleId, MediumId, CircleCode, AccountNo, AccountOther, Version, Location) =>
-    api.post('/RechargeCall', {
-      Tokenid, UserID, RefTxnId, MobileNo, Operator, CricleId, Amount, Pin, CircleId, MediumId, CircleCode, AccountNo, AccountOther, Version, Location
+  RechargeCall: (Tokenid, UserID, RefTxnId, MobileNo, Operator, CricleId, Amount, Pin, CircleId, MediumId, CircleCode, AccountNo, AccountOther,Optional1,Optional2,Optional3,Optional4, Version, Location) =>
+    axios.post('https://onlinerechargeservice.in/Recharge/RechargeCall1', {
+      Tokenid, UserID, RefTxnId, MobileNo, Operator, CricleId, Amount, Pin, CircleId, MediumId, CircleCode, AccountNo, AccountOther,Optional1,Optional2,Optional3,Optional4, Version, Location
     }),
   BookComplain:(Tokenid,RecID,Remark,Version,Location) =>
     api.post('/BookComplain',{

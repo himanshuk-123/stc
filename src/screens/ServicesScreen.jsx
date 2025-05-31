@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, FlatList, SafeAreaView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, FlatList, SafeAreaView, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons'; // For icons
@@ -8,6 +8,9 @@ import BackArrowButton from '../component/BackArrowButton';
 import Header from '../component/Header';
 import GradientLayout from '../component/GradientLayout';
 import CustomButton from '../component/button';
+import { horizontalScale, verticalScale, moderateScale } from '../utils/responsive';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const services = [
   { id: '1', name: 'Credit Card Bill', image: require('../../assets/logo.png') },
@@ -31,34 +34,62 @@ const services = [
 
 const ServicesScreen = () => {
   const navigation = useNavigation();
+  
+  // Calculate card dimensions for 3 cards per row
+  const cardWidth = "90%"; // Using percentage for responsive width
+  const cardHeight = verticalScale(70); // Height scales with screen size
 
   const renderItem = ({ item }) => (
-    <View className="w-1/3 items-center my-2">
+    <View style={{
+      width: '33%',
+      alignItems: 'center',
+      marginVertical: verticalScale(8)
+    }}>
       <Cards 
-      imageSource={item.image}
-       title={item.name}
-        height={100}
-         width={100}
-          gradientColors={['#ffffff','#ffffff']}
-          style={{fontSize:12}} />
+        imageSource={item.image}
+        title={item.name}
+        height={cardHeight}
+        width={cardWidth}
+        imgheight={verticalScale(40)}
+        imgwidth={horizontalScale(40)}
+        gradientColors={['#ffffff','#ffffff']}
+        style={{ fontSize: moderateScale(13) }}
+        cardsPerRow={3}
+      />
     </View>
   );
 
   return (
     <GradientLayout>
-      <SafeAreaView className="px-4 pt-4">
+      <SafeAreaView style={{ 
+        paddingHorizontal: horizontalScale(16), 
+        paddingTop: verticalScale(16)
+      }}>
         {/* Back Button and Title */}
-       <Header headingTitle={"Bill Payments"} />
+        <Header headingTitle={"Bill Payments"} />
+        
         {/* Search Bar */}
-        <View className="bg-white rounded-full flex-row items-center px-4 mb-4"
-            style={{height: 50}}
-        >
+        <View style={{
+          backgroundColor: 'white',
+          borderRadius: 999,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: horizontalScale(16),
+          marginBottom: verticalScale(16),
+          height: verticalScale(40)
+        }}>
           <TextInput
             placeholder="Search"
-            className="flex-1 py-2 text-gray-700 font-bold text-lg"
+            style={{
+              flex: 1,
+              paddingVertical: verticalScale(8),
+              color: '#333',
+              fontWeight: 'bold',
+              fontSize: moderateScale(16)
+            }}
             placeholderTextColor="#888"
           />
-          <Ionicons name="search" size={28} color="#666" />
+          <Ionicons name="search" size={moderateScale(28)} color="#666" />
         </View>
 
         {/* Cards Grid */}
@@ -68,10 +99,17 @@ const ServicesScreen = () => {
           renderItem={renderItem}
           numColumns={3}
           showsVerticalScrollIndicator={false}
+          style={{ marginBottom: verticalScale(16) }}
         />
-      <CustomButton title="Change Password" onPress={() => navigation.navigate('ChangePasswordScreen')} />
+        
+        <View style={{ paddingBottom: verticalScale(20) }}>
+          <CustomButton 
+            title="Change Password" 
+            onPress={() => navigation.navigate('ChangePassword')} 
+          />
+        </View>
       </SafeAreaView>
-      </GradientLayout>
+    </GradientLayout>
   );
 };
 

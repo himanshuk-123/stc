@@ -1,19 +1,17 @@
 import React from 'react';
-import { View, Text, TextInput, FlatList, SafeAreaView, Image, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, FlatList, SafeAreaView, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons'; // For icons
 import Cards from '../component/cards';
-import BackArrowButton from '../component/BackArrowButton';
 import logo from '../../assets/logo.png';
 import live_chat from '../../assets/live_chat.png';
 import talk_to_us from '../../assets/talk_to_us.png';
 import Header from '../component/Header';
 import GradientLayout from '../component/GradientLayout';
 import CustomButton from '../component/button';
+import { horizontalScale, verticalScale, moderateScale } from '../utils/responsive';
 
 const services = [
-    { id: '1', name: 'Comissions', image: require('../../assets/logo.png'),navigate:'ComissionScreen'},
+    { id: '1', name: 'Comissions', image: require('../../assets/logo.png'), navigate:'Comission'},
     { id: '2', name: 'Postpaid', image: require('../../assets/live_chat.png') },
     { id: '3', name: 'Electricity', image: require('../../assets/talk_to_us.png') },
     { id: '4', name: 'FASTag', image: require('../../assets/logo.png') },
@@ -23,24 +21,39 @@ const services = [
 
 const MoreScreen = () => {
     const navigation = useNavigation();
+    
+    // Calculate responsive dimensions
+    const cardWidth = "90%";
+    const cardHeight = verticalScale(80);
 
     const renderItem = ({ item }) => (
-        <View className="w-1/2 items-center my-2 ">
+        <View style={{
+            width: '50%', 
+            alignItems: 'center',
+            marginVertical: verticalScale(8)
+        }}>
             <Cards 
-            imageSource={item.image} 
-            title={item.name} 
-            height={100} 
-            width={150} 
-            gradientColors={['#ffffff', '#ffffff']} 
-            navigateTo={item.navigate}
+                imageSource={item.image} 
+                title={item.name} 
+                height={cardHeight}
+                width={cardWidth}
+                imgheight={verticalScale(50)}
+                imgwidth={horizontalScale(50)}
+                gradientColors={['#ffffff', '#ffffff']} 
+                navigateTo={item.navigate}
+                cardsPerRow={2}
+                style={{ fontSize: moderateScale(14) }}
             />
         </View>
     );
 
     return (
-
         <GradientLayout>
-            <SafeAreaView className="flex-1 px-4 pt-4">
+            <SafeAreaView style={{
+                flex: 1,
+                paddingHorizontal: horizontalScale(16),
+                paddingTop: verticalScale(16)
+            }}>
                 {/* Back Button and Title */}
                 <Header headingTitle={"More"}/>
 
@@ -51,38 +64,74 @@ const MoreScreen = () => {
                     renderItem={renderItem}
                     numColumns={2}
                     showsVerticalScrollIndicator={false}
+                    style={{ marginBottom: verticalScale(16) }}
                 />
 
-                <View className="flex-row justify-between items-end w-full mb-3">
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-end',
+                    width: '100%',
+                    marginBottom: verticalScale(12),
+                    paddingHorizontal: horizontalScale(8)
+                }}>
                     {/* Left Part: Live Chat & Talk to Us */}
-                    <View className="flex-row  w-1/2 h-full justify-around items-center">
-                        <View className="items-center">
-                            <Image source={live_chat} className="w-11 h-11 mb-1" />
-                            <Text className="text-xs">Live Chat</Text>
+                    <View style={{
+                        flexDirection: 'row',
+                        width: '50%',
+                        height: '100%',
+                        justifyContent: 'space-around',
+                        alignItems: 'center'
+                    }}>
+                        <View style={{ alignItems: 'center' }}>
+                            <Image
+                                source={live_chat}
+                                style={{
+                                    width: horizontalScale(44),
+                                    height: verticalScale(44),
+                                    marginBottom: verticalScale(4)
+                                }}
+                            />
+                            <Text style={{ fontSize: moderateScale(12) }}>Live Chat</Text>
                         </View>
-                        <View className="items-center">
-                            <Image source={talk_to_us} className="w-11 h-10 mb-1" />
-                            <Text className="text-xs">Talk to Us</Text>
+                        <View style={{ alignItems: 'center' }}>
+                            <Image
+                                source={talk_to_us}
+                                style={{
+                                    width: horizontalScale(44),
+                                    height: verticalScale(40),
+                                    marginBottom: verticalScale(4)
+                                }}
+                            />
+                            <Text style={{ fontSize: moderateScale(12) }}>Talk to Us</Text>
                         </View>
                     </View>
 
-                    {/* Right Part: Curved half-circle with logo */}
-                    <View className="  w-1/2 items-center justify-center">
+                    {/* Right Part: Logo */}
+                    <View style={{
+                        width: '50%',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
                         <Image
                             source={logo}
                             style={{
-                                width: 90,
-                                height: 40,
-                                justifyContent: 'center',
-
+                                width: horizontalScale(90),
+                                height: verticalScale(40),
+                                resizeMode: 'contain'
                             }}
                         />
                     </View>
                 </View>
-                <CustomButton title="Change Password" onPress={() => navigation.navigate('ChangePasswordScreen')} />
-
+                
+                <View style={{ paddingBottom: verticalScale(20) }}>
+                    <CustomButton
+                        title="Change Password" 
+                        onPress={() => navigation.navigate('ChangePassword')}
+                    />
+                </View>
             </SafeAreaView>
-            </GradientLayout>
+        </GradientLayout>
     );
 };
 

@@ -15,9 +15,9 @@ const ApiService = {
     api.post('/Login', {
       Name, Pass, Version, IMEI, FireToken,Location
     }),
-  changePassword: (oldPassword,newPassword,confirmPassword) =>
+  changePassword: (TokenID,Password,OldPassword,Version) =>
     api.post('/ChangePass', {
-      oldPassword,newPassword,confirmPassword
+      TokenID,Password,OldPassword,Version
     }),
 
   otpVerify: (MobileNo, Version, IMEI, OTP) =>
@@ -25,15 +25,19 @@ const ApiService = {
       MobileNo, Version, IMEI, OTP
     }),
 
-  resendOTP: (MobileNo, Version) =>
-    api.post('/ResendOTP', {
-      MobileNo, Version
-    }),
+  resendOTP: (Mobileno,Version,IP,Location) =>
+    api.post('/ResendOTP',{
+      Mobileno,Version,IP,Location
+    } ),
 
   forgetPassword: (Mobileno, Password, Version, OTP) =>
     api.post('/ForgetPass', {
       Mobileno, Password, Version, OTP
     }),
+    changePin:(TokenID,OldPin,NewPin,Version) => 
+      api.post('/ChangePin',{
+        TokenID,OldPin,NewPin,Version
+      }),
     
     slider: () =>
         api.get('/SilderList')

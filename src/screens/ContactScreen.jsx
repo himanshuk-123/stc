@@ -1,13 +1,13 @@
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Header from '../component/Header'
 import GradientLayout from '../component/GradientLayout'
 import SupportService from '../services/SupportService'
-import { UserContext } from '../context/UserContext'
 import Constants from 'expo-constants';
+import { useSelector } from 'react-redux';
 const SupportScreen = () => {
-    const { userData } = useContext(UserContext)
+    const userData = useSelector(state => state.user)
     const [contactData, setContactData] = useState([])
     const [loading, setLoading] = useState(false)
 

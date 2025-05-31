@@ -33,7 +33,10 @@ const ReportService = {
         api.post('/MEMBERLIST', {
             Tokenid, Version, Location
         }),
-
+    REPORTSLIST: (Tokenid, Startdate, status, Enddate, MobileNo, Version, Location) =>
+        api.post('/RechargeReport', {
+            Tokenid, Startdate, status, Enddate, MobileNo, Version, Location
+        }),
 
 
 

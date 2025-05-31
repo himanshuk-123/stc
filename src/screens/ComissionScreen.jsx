@@ -1,16 +1,18 @@
-import { View, Text, SafeAreaView, FlatList } from 'react-native';
+import { View, Text, SafeAreaView, FlatList, Modal, TouchableOpacity } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import Header from '../component/Header';
 import GradientLayout from '../component/GradientLayout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RechargeApiServices from '../services/RechargeService';
 import Constants from 'expo-constants';
-import { UserContext } from '../context/UserContext';
-
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../utils/authUtils';
 const ComissionScreen = () => {
-    const {userData } = useContext(UserContext)
+    const dispatch = useDispatch();
+    const userData = useSelector((state) => state.user);
     const [commissionList, setCommissionList] = useState([]);
-
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     useEffect(() => {
         const fetchCommission = async () => {
             try {
@@ -28,6 +30,11 @@ const ComissionScreen = () => {
                 );
                 const data = response.data;
 
+                console.log("API Response: ", data);
+                if(data.STATUSCODE !== '1'){
+                    setShowErrorModal(true);
+                    setErrorMessage("Authentication failed");
+                }
                 if (data.ERROR === '0') {
                     const formattedList = data.Commissionlist.map((item, index) => ({
                         id: index.toString(), // fix: unique id
@@ -40,6 +47,7 @@ const ComissionScreen = () => {
                     setCommissionList(formattedList);
                 } else {
                     console.log('API Error:', data.MESSAGE);
+
                 }
             } catch (error) {
                 console.log("Fetch Commission Error:", error);
@@ -58,9 +66,33 @@ const ComissionScreen = () => {
         </View>
     );
 
+    const handleErrorModalOk = () => {
+        setShowErrorModal(false);
+        // Use the global logout function
+        logout();
+      };
     return (
         <GradientLayout>
             <SafeAreaView className="p-4 flex-1">
+            <Modal
+          visible={showErrorModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={handleErrorModalOk}
+        >
+          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+            <View className="bg-white p-6 rounded-xl w-4/5 items-center">
+              <Text className="text-xl font-bold mb-4">Alert</Text>
+              <Text className="text-gray-800 text-center mb-6">{errorMessage}</Text>
+              <TouchableOpacity
+                className="bg-blue-500 py-3 px-12 rounded-full"
+                onPress={handleErrorModalOk}
+              >
+                <Text className="text-white font-bold text-lg">OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
                 <Header headingTitle="Your Commission" />
                 <View className="flex-row justify-between border-y border-gray-300 py-2 mb-2">
                     <Text className="font-semibold text-gray-700">Provider</Text>

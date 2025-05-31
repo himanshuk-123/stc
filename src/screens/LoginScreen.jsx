@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useState } from 'react';
 import logo from '../../assets/logo.png';
 import phone_icon from '../../assets/phone_icon.png';
 import live_chat from '../../assets/live_chat.png';
@@ -19,8 +19,9 @@ import * as Location from 'expo-location';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import ApiService from '../services/authService';
-import { UserContext } from '../context/UserContext';
 import CustomButton from '../component/button';
+import { useAppDispatch } from '../redux/hooks';
+import { saveUserData } from '../redux/slices/userSlice';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -28,16 +29,9 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [secureText, setSecureText] = useState(true);
   const [loading, setLoading] = useState(false);
-  const { saveUserData, userData } = useContext(UserContext);
-
-  useEffect(() => {
-    const checkLogin = async () => {
-      if (userData.tokenid) {
-        navigation.navigate('TabRouter');
-      }
-    };
-    checkLogin();
-  }, [userData.tokenid]);
+  
+  // Use Redux custom hooks
+  const dispatch = useAppDispatch();
 
   const handleLogin = async () => {
     if (!phone || !password) {
@@ -83,11 +77,13 @@ const LoginScreen = () => {
         payload.Location
       );
       console.log(response.data);
-      const { ERROR, MESSAGE, TOKENID, OTPCheck, SHOPNAME, EMAIL, USERTYPE, MOBILENUMBER } = response.data;
+      const { ERROR, MESSAGE, TOKENID, OTPCheck, SHOPNAME, EMAIL, USERTYPE, MOBILENUMBER,USERID } = response.data;
+
 
       if (ERROR === '0') {
         if (OTPCheck === 'false') {
           Alert.alert('OTP Required', 'Please complete OTP verification.');
+          navigation.navigate('OtpVerify');
         } else {
           const userObject = {
             tokenid: TOKENID,
@@ -95,19 +91,14 @@ const LoginScreen = () => {
             email: EMAIL,
             usertype: USERTYPE,
             shopname: SHOPNAME,
-            mobilenumber: MOBILENUMBER
+            mobilenumber: MOBILENUMBER,
+            message: MESSAGE,
+            userid: USERID,
+            location: locationStr,
           };
-          await saveUserData({
-            ...userData,
-            tokenid: TOKENID,
-            username: SHOPNAME,
-            email: EMAIL,
-            usertype: USERTYPE,
-            shopname: SHOPNAME,
-            mobilenumber: MOBILENUMBER
-          });
-          Alert.alert('Success', MESSAGE);
-          navigation.navigate('TabRouter');
+          // Dispatch to Redux and store data in AsyncStorage
+          await dispatch(saveUserData(userObject));
+          // The RootNavigator will detect tokenid and redirect to app stack
         }
       } else {
         Alert.alert('Login Failed', MESSAGE);
@@ -125,7 +116,7 @@ const LoginScreen = () => {
       <SafeAreaView className="flex-1 justify-between items-center p-6 mt-9">
         {/* Top Section */}
         <View className="w-full items-center mt-12">
-          <Image source={logo} className="w-29 h-25 mb-4" />
+          <Image source={logo} className="w-29 h-25 mb-4"/>
           <Text className="text-xl font-bold mb-4">Login</Text>
 
           <View className="flex-row items-center border rounded-full px-5 p-1 w-full mb-4 bg-white">
@@ -164,9 +155,16 @@ const LoginScreen = () => {
             disabled={loading}
           />
           <View className="w-full mt-4">
-            <CustomButton title='Register' navigateTo='RegisterScreen'/>
+            <CustomButton title='Register' onPress={() => navigation.navigate('Register')}/>
           </View>
+          <TouchableOpacity 
+            className="mt-3" 
+            onPress={() => navigation.navigate('ForgetPassword')}
+          >
+            <Text className="text-blue-600">Forgot Password?</Text>
+          </TouchableOpacity>
         </View>
+        
         {/* Bottom Icons */}
         <View className="flex-row justify-between items-end w-full mb-3">
           <View className="flex-row w-1/2 h-full justify-around items-center">
@@ -183,8 +181,6 @@ const LoginScreen = () => {
           <View className="w-1/2 items-center justify-center">
             <Image source={logo} style={{ width: 90, height: 40 }} />
           </View>
-        </View>
-        <View>
         </View>
       </SafeAreaView>
     </GradientLayout>

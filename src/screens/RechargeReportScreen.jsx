@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -21,7 +21,7 @@ import Header from "../component/Header";
 import GradientLayout from "../component/GradientLayout";
 import ReportService from "../services/reportService";
 import Constants from "expo-constants";
-import { UserContext } from "../context/UserContext";
+import { useSelector, useDispatch } from 'react-redux';
 
 // Helper functions
 const formatDate = (date) => {
@@ -45,7 +45,8 @@ export default function RechargeReport() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [showPicker, setShowPicker] = useState({ from: false, to: false });
-  const { userData } = useContext(UserContext);
+  const dispatch = useDispatch();
+  const userData = useSelector((state) => state.user);
 
   const payload = {
     Tokenid: userData.tokenid,

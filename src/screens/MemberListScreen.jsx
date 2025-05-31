@@ -9,27 +9,27 @@ import {
   SafeAreaView,
   Alert,
   FlatList,
-  ActivityIndicator
+  ActivityIndicator,
+  Modal
 } from "react-native";
-// import {
-//   FontAwesome5,
-//   MaterialIcons,
-//   Entypo,
-//   Ionicons,
-// } from "@expo/vector-icons";
 import Header from "../component/Header";
 import GradientLayout from "../component/GradientLayout";
 import ReportService from "../services/reportService";
 import Constants from "expo-constants";
-import { UserContext } from "../context/UserContext";
+import { useSelector, useDispatch } from 'react-redux';
 import { FontAwesome5, MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
+import { useNavigation } from '@react-navigation/native';
+import { logout } from '../utils/authUtils';
 // Helper functions
 
 export default function MemberListScreen() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { userData } = useContext(UserContext);
-
+  const dispatch = useDispatch();
+  const userData = useSelector((state) => state.user);
+  const navigation = useNavigation();
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   useEffect(() => {
     const MemberList = async () => {
       setLoading(true);
@@ -46,8 +46,39 @@ export default function MemberListScreen() {
           payload.Location
         );
         const data = response.data;
-        setData(data.MEMBERLIST);
-        console.log(data);
+        console.log("Himanshu Kasoudhan: ",data)
+        if(data.STATUSCODE !== '1'){
+          setShowErrorModal(true);
+          setErrorMessage(data.MESSAGE);
+        }
+        if(data.ERROR === '0'){
+          if(data.MEMBERLIST==null){
+            Alert.alert("Error", data.MESSAGE,
+            [
+              {
+                text: "OK",
+                onPress: () => {
+                  navigation.goBack();
+                },
+              },
+            ]
+          );
+        }else{
+          setData(data.MEMBERLIST);
+        }
+      }
+        else{
+          Alert.alert("Error", data.MESSAGE,
+            [
+              {
+                text: "OK",
+                onPress: () => {
+                  navigation.goBack();
+                },
+              },
+            ]
+          );
+        }
       } catch (error) {
         Alert.alert("Error", error.message);
       } finally {
@@ -64,13 +95,12 @@ export default function MemberListScreen() {
         <Text style={styles.name}>{item.FullName}</Text>
   
         <View style={styles.row}>
-          <Ionicons name="call" size={16} color="#4CAF50" />
-          <Text style={styles.text}>{item.MobileNumber}</Text>
+          <Ionicons name="mail" size={16} color="red" />
+          <Text style={styles.text}>{item.Email}</Text>
         </View>
-  
         <View style={styles.row}>
-          <MaterialIcons name="location-on" size={16} color="#E91E63" />
-          <Text style={styles.text}>{item.Address || "N/A"}</Text>
+          <Ionicons name="call" size={16} color="green" />
+          <Text style={styles.text}>{item.MobileNumber}</Text>
         </View>
   
         <View style={styles.row}>
@@ -78,14 +108,26 @@ export default function MemberListScreen() {
           <Text style={styles.text}>{item.Type}</Text>
         </View>
   
-        <View style={styles.row}>
-          <FontAwesome5 name="id-badge" size={16} color="#9C27B0" />
-          <Text style={styles.text}>User ID: {item.Userid}</Text>
+        <View style={styles.row1}>
+          <View style={styles.row}>
+            <FontAwesome5 name="id-badge" size={16} color="#9C27B0" />
+            <Text style={styles.text}>User ID: {item.Userid}</Text>
+          </View>
+          <View>
+            <TouchableOpacity className="bg-blue-500 py-3 px-12 rounded-full" onPress={() => navigation.navigate('WalletTopup', { userId: item.Userid,users: data })}>
+              <Text className="text-white font-bold text-lg">Wallet Topup</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
   };
   
+  const handleErrorModalOk = () => {
+    setShowErrorModal(false);
+    // Use the global logout function
+    logout();
+  };
 
   // if (loading) {
   //   return (
@@ -98,6 +140,25 @@ export default function MemberListScreen() {
   return (
     <GradientLayout>
       <SafeAreaView style={{ flex: 1, padding: 16 }}>
+      <Modal
+          visible={showErrorModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={handleErrorModalOk}
+        >
+          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+            <View className="bg-white p-6 rounded-xl w-4/5 items-center">
+              <Text className="text-xl font-bold mb-4">Alert</Text>
+              <Text className="text-gray-800 text-center mb-6">{errorMessage}</Text>
+              <TouchableOpacity
+                className="bg-blue-500 py-3 px-12 rounded-full"
+                onPress={handleErrorModalOk}
+              >
+                <Text className="text-white font-bold text-lg">OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
         <Header headingTitle="Member List" />
         {loading ? (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -138,6 +199,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 6,
+  },
+  row1: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+    justifyContent: "space-between",
   },
   text: {
     marginLeft: 8,

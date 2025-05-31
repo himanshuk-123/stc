@@ -9,7 +9,8 @@ import {
   SafeAreaView,
   Alert,
   FlatList,
-  ActivityIndicator
+  ActivityIndicator,
+  Modal
 } from "react-native";
 import {
   FontAwesome5,
@@ -21,14 +22,18 @@ import Header from "../component/Header";
 import GradientLayout from "../component/GradientLayout";
 import ReportService from "../services/reportService";
 import Constants from "expo-constants";
-import { UserContext } from "../context/UserContext";
-
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../utils/authUtils';
 // Helper functions
 
 export default function UserDayBookScreen() {
   const [data, setData] = useState([]);
+  const [todayData, setTodayData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { userData } = useContext(UserContext);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const dispatch = useDispatch();
+  const userData = useSelector((state) => state.user);
 
   useEffect(() => {
     const UserDayBook = async () => {
@@ -47,6 +52,14 @@ export default function UserDayBookScreen() {
         );
         const data = response.data;
         console.log(data);
+        if(data.STATUSCODE !== '1'){
+          setShowErrorModal(true);
+          setErrorMessage("Authentication failed");
+        } 
+        if(data.ERROR === '0'){
+          setData(data.REPORT);
+          setTodayData(data.TodayData);
+        }
       } catch (error) {
         Alert.alert("Error", error.message);
       } finally {
@@ -57,7 +70,11 @@ export default function UserDayBookScreen() {
     UserDayBook(); // Fetch all on mount
   }, []);
 
-
+  const handleErrorModalOk = () => {
+    setShowErrorModal(false);
+    // Use the global logout function
+    logout();
+  };
 
   if (loading) {
     return (
@@ -66,9 +83,29 @@ export default function UserDayBookScreen() {
       </View>
     );
   }
+
   return (
     <GradientLayout>
   <SafeAreaView style={{ padding: 16 }}>
+  <Modal
+          visible={showErrorModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={handleErrorModalOk}
+        >
+          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+            <View className="bg-white p-6 rounded-xl w-4/5 items-center">
+              <Text className="text-xl font-bold mb-4">Alert</Text>
+              <Text className="text-gray-800 text-center mb-6">{errorMessage}</Text>
+              <TouchableOpacity
+                className="bg-blue-500 py-3 px-12 rounded-full"
+                onPress={handleErrorModalOk}
+              >
+                <Text className="text-white font-bold text-lg">OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
     <Header headingTitle="User Day Book" />
 
     {/* 🟧 Summary Section */}

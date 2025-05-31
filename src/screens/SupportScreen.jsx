@@ -4,10 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Header from '../component/Header'
 import GradientLayout from '../component/GradientLayout'
 import SupportService from '../services/SupportService'
-import { UserContext } from '../context/UserContext'
+import { useSelector, useDispatch } from 'react-redux';
 import Constants from 'expo-constants';
+import CustomButton from '../component/button'
 const SupportScreen = () => {
-    const { userData } = useContext(UserContext)
+    const dispatch = useDispatch();
+    const userData = useSelector((state) => state.user);
     const [support, setSupport] = useState([])
     const [loading, setLoading] = useState(false)
 
@@ -50,11 +52,12 @@ const SupportScreen = () => {
         }
         fetchSupport()
     }, []);
-
+    
     return (
         <GradientLayout>
             <SafeAreaView className='px-4 pt-4'>
                 <Header headingTitle={'Help & Support'} />
+            
                 <View className='justify-center items-center'>
                     <Text className='text-2xl font-bold'>Support</Text>
                 </View>

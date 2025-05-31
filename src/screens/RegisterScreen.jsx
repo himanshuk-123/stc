@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import logo from "../../assets/logo.png";
 import phone_icon from "../../assets/phone_icon.png";
 import live_chat from "../../assets/live_chat.png";
@@ -21,11 +22,12 @@ import * as Device from "expo-device";
 import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ApiService from "../services/authService";
-import { UserContext } from "../context/UserContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import RegisterService from "../services/registerService";
 import { Picker } from "@react-native-picker/picker";
-import COMMON_SERVICE from'../services/commonServices';
+import  COMMON_SERVICE  from "../services/commonServices";
+import { saveUserData } from "../redux/slices/userSlice";
+
 const RegisterScreen = () => {
   const navigation = useNavigation();
   const [states, setStates] = useState([]);
@@ -36,7 +38,9 @@ const RegisterScreen = () => {
   const [pincode, setPincode] = useState();
   const [loading, setLoading] = useState(false);
   const [selectedStateId, setSelectedStateId] = useState(null);
-  const { saveUserData } = useContext(UserContext);
+  
+  // Use Redux dispatcher instead of Context
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchStates = async () => {
@@ -107,7 +111,7 @@ const RegisterScreen = () => {
 
       if (Error === "0") {
         Alert.alert(Message);
-        // If registration returns user data, save it here
+        // If registration returns user data, save it here with Redux
         // Example:
         // const userObject = {
         //   tokenid: response.data.TOKENID,
@@ -117,7 +121,7 @@ const RegisterScreen = () => {
         //   shopname: response.data.SHOPNAME,
         //   mobilenumber: response.data.MOBILENUMBER
         // };
-        // await saveUserData(userObject);
+        // dispatch(saveUserData(userObject));
       } else {
         Alert.alert("Login Failed", Message);
       }

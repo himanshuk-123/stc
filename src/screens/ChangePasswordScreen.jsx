@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import logo from '../../assets/logo.png';
 import live_chat from '../../assets/live_chat.png';
 import talk_to_us from '../../assets/talk_to_us.png';
@@ -18,8 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import Constants from 'expo-constants';
 import ApiService from '../services/authService';
-import { UserContext } from '../context/UserContext';
 import Header from '../component/Header';
+import { useSelector } from 'react-redux';
 
 const ChangePasswordScreen = () => {
   const navigation = useNavigation();
@@ -30,7 +30,9 @@ const ChangePasswordScreen = () => {
   const [secureNewPass, setSecureNewPass] = useState(true);
   const [secureConfirmPass, setSecureConfirmPass] = useState(true);
   const [loading, setLoading] = useState(false);
-  const { userData } = useContext(UserContext);
+  
+  // Use Redux selector instead of UserContext
+  const userData = useSelector(state => state.user);
 
   const handleChangePassword = async () => {
     // Validate inputs
@@ -48,16 +50,7 @@ const ChangePasswordScreen = () => {
 
     try {
       // Get current location for API payload
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Location permission is required');
-        setLoading(false);
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      const locationStr = `${location.coords.latitude},${location.coords.longitude}`;
-
+      
       // This is a placeholder for the actual change password API call
       // Replace with your actual API call when available
       // setTimeout(() => {
@@ -72,21 +65,25 @@ const ChangePasswordScreen = () => {
 
       //Actual API call would look like this:
       const payload = {
-        Tokenid: userData.tokenid,
-        FormDate: null,
-        ToDate: null,
+        TokenID: userData.tokenid,
+        Password: newPassword,
+        OldPassword: currentPassword,
         Version: Constants?.expoConfig?.version?.split('.')[0] || '1',
-        Location: null,
       };
+      console.log(payload);
       const response = await ApiService.changePassword(
-        payload.Tokenid,
-        payload.FormDate,
-        payload.ToDate,
-        payload.Version,
-        payload.Location
-      );
-      
+        payload.TokenID,
+        payload.Password,
+        payload.OldPassword,
+        payload.Version
+      );      
       console.log("himanshu response: ",response.data);
+      if(response.data.Error === "0"){
+        Alert.alert('Success', response.data.Message);
+        navigation.goBack();
+      }else{
+        Alert.alert('Try Again', response.data.Message);
+      }
     } catch (error) {
       console.error('Password change error:', error);
       Alert.alert('Error', 'Failed to change password. Please try again.');

@@ -1,14 +1,15 @@
 import { View, Text } from 'react-native'
-import React, { useContext } from 'react'
+import React from 'react'
 import CustomButton from '../component/button'
 import { useNavigation } from '@react-navigation/native';
-import { UserContext } from '../context/UserContext';
+import { useSelector, useDispatch } from 'react-redux';
 import * as Location from 'expo-location';
 import Constants from 'expo-constants';
 import UserService from '../services/UserService';
 import ReportService from '../services/reportService.js';
 const BalanceCheckScreen = () => {
-    const { userData } = useContext(UserContext)
+    const dispatch = useDispatch();
+    const userData = useSelector((state) => state.user);
     const navigation = useNavigation();
 
     // const checkBalance = async() => {
