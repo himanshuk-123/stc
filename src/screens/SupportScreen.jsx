@@ -5,7 +5,7 @@ import Header from '../component/Header'
 import GradientLayout from '../component/GradientLayout'
 import SupportService from '../services/SupportService'
 import { useSelector, useDispatch } from 'react-redux';
-import Constants from 'expo-constants';
+//import Constants from 'expo-constants';
 import CustomButton from '../component/button'
 const SupportScreen = () => {
     const dispatch = useDispatch();
@@ -37,7 +37,7 @@ const SupportScreen = () => {
                 setLoading(true);
                 const payload = {
                     Tokenid: userData.tokenid,
-                    Version: Constants?.expoConfig?.version?.split('.')[0] || '1',
+                    Version: '1',
                     Location: null,
                 };
                 const response = await SupportService.Support(payload.Tokenid, payload.Version, payload.Location)
@@ -55,14 +55,14 @@ const SupportScreen = () => {
     
     return (
         <GradientLayout>
-            <SafeAreaView className='px-4 pt-4'>
+            <SafeAreaView style={{ paddingHorizontal: 16, paddingTop: 16 }}>
                 <Header headingTitle={'Help & Support'} />
             
-                <View className='justify-center items-center'>
-                    <Text className='text-2xl font-bold'>Support</Text>
+                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Support</Text>
                 </View>
                 {loading ? (
-                    <View className='justify-center items-center'>
+                    <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                         <ActivityIndicator size="large" color="#0000ff" />
                     </View>
                 ) : (
@@ -71,7 +71,7 @@ const SupportScreen = () => {
                             data={support}
                             renderItem={renderItem}
                             keyExtractor={(item, index) => index.toString()}
-                            contentContainerStyle={{ paddingBottom: 180 }}
+                            contentContainerStyle={{ paddingBottom: 200 }}
                             ListEmptyComponent={<Text>No data found</Text>}
                             showsVerticalScrollIndicator={false}
                         />
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 16,
         fontWeight: "bold",
-        color: "#1e293b",
+        color: "navy",
         marginBottom: 10,
     },
     row: {
@@ -110,11 +110,11 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 14,
-        color: "#64748b",
+        color: "blue",
     },
     value: {
         fontSize: 14,
         fontWeight: "bold",
-        color: "#0f172a",
+        color: "purple",
     },
 });

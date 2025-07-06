@@ -1,7 +1,7 @@
 import { SafeAreaView, StatusBar, View, Platform } from 'react-native'
 import React from 'react'
 import "./global.css"
-import { LinearGradient } from 'expo-linear-gradient'
+import LinearGradient  from 'react-native-linear-gradient'
 import { Provider } from 'react-redux'
 import store from './src/redux/store'
 import RootNavigator from './src/navigation/RootNavigator'
@@ -20,7 +20,6 @@ const App = () => {
         barStyle={"light-content"} 
         hidden={false} 
         translucent={true} 
-        // className='pt-10'
       />
     <LinearGradient
       colors={['#7ad6f0', '#ffffff']}

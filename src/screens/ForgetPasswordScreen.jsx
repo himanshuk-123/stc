@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  StyleSheet,
 } from 'react-native';
 import React, { useState } from 'react';
 import logo from '../../assets/logo.png';
@@ -13,38 +14,55 @@ import phone_icon from '../../assets/phone_icon.png';
 import live_chat from '../../assets/live_chat.png';
 import talk_to_us from '../../assets/talk_to_us.png';
 import GradientLayout from '../component/GradientLayout';
-import * as Device from 'expo-device';
-import * as Location from 'expo-location';
-import Constants from 'expo-constants';
 import ApiService from '../services/authService';
 import CustomButton from '../component/button';
 import { useNavigation } from '@react-navigation/native';
 import { horizontalScale, moderateScale, verticalScale } from '../utils/responsive';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const ForgetPasswordScreen = () => {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState('');
   const navigation = useNavigation();
+
+  const verifyOtp = async () => {
+    setLoading(true);
+    try {
+      const payload = {
+        UserName: phone,
+        OTP: otp,
+        Password: '123456',
+        Version: '1',
+        IP: "",
+        Location: null,
+      }
+      console.log(payload);
+      const response = await ApiService.forgetPassword(
+        payload.UserName,
+        payload.OTP,
+        payload.Password,
+        payload.Version,
+        payload.IP,
+        payload.Location
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const sendOtp = async () => {
     setLoading(true);
     try {
-
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Location permission is required');
-        setLoading(false);
-        return;
-      }
-
-      // Get current location
-      let location = await Location.getCurrentPositionAsync({});
-      const locationStr = `${location.coords.latitude},${location.coords.longitude}`;
-
       const payload = {
         MobileNo: phone,
-        Version: Constants?.expoConfig?.version?.split('.')[0],
-        IP: Device.osInternalBuildId,
-        Location: locationStr,
+        Version: '1',
+        IP: "",
+        Location: null,
       }
       console.log(payload);
       const response = await ApiService.resendOTP(
@@ -56,11 +74,12 @@ const ForgetPasswordScreen = () => {
       console.log(response.data);
       if (response.data.Error === "0") {
         Alert.alert('OTP Sent', response.data.Message);
+        setShowOtp(true);
         navigation.navigate('OtpVerify', {
           MobileNo: phone,
           Version: Constants?.expoConfig?.version?.split('.')[0],
-          IP: Device.osInternalBuildId,
-          Location: locationStr,
+          IP: "",
+          Location: null,
         });
       } else {
         Alert.alert('Error', response.data.Message);
@@ -73,97 +92,174 @@ const ForgetPasswordScreen = () => {
   }
   return (
     <GradientLayout>
-      <SafeAreaView className="flex-1 justify-between items-center p-6 mt-9">
+      <SafeAreaView style={styles.container}>
 
-{/* TOP SECTION */}
-<View className="w-full items-center mt-12">
-  <Image source={logo} className="w-29 h-25 mb-4" />
-  <Text className="text-xl font-bold mb-4">Send OTP</Text>
+        {/* TOP SECTION */}
+        <View style={styles.topSection}>
+          <Image source={logo} style={styles.logo} />
+          <Text style={styles.title}>{showOtp ? 'Verify OTP' : 'Send OTP'}</Text>
 
-  <View className="flex-row items-center border rounded-full px-5 p-1 w-full mb-4 bg-white">
-    <Image source={phone_icon} className="w-7 h-7 mr-6" />
-    <TextInput
-      placeholder="Mobile Number"
-      placeholderTextColor="#888"
-      className="flex-1 text-gray-900 font-bold text-lg"
-      value={phone}
-      onChangeText={setPhone}
-      keyboardType="phone-pad"
-    />
-  </View>
+          <View style={styles.inputContainer}>
+            <MaterialCommunityIcons name="phone" size={26} color="#11458a" />
+            <TextInput
+              placeholder="Mobile Number"
+              placeholderTextColor="#888"
+              style={styles.input}
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+            />
+          </View>
 
-  <CustomButton
-    title={loading ? 'Sending OTP...' : 'Send OTP'}
-    onPress={sendOtp}
-    disabled={loading}
-  />
-</View>
+          {showOtp && (
+            <View style={styles.inputContainer}>
+              <MaterialCommunityIcons name="email" size={26} color="#11458a" />
+              <TextInput
+                placeholder="OTP"
+                placeholderTextColor="#888"
+                style={styles.input}
+                value={otp}
+                onChangeText={setOtp}
+                keyboardType="numeric"
+                maxLength={6}
+              />
+            </View>
+          )}
+          {showOtp && (
+            <View style={styles.resendOtpContainer}>
+            <TouchableOpacity onPress={sendOtp} style={{flexDirection: 'row', alignItems: 'center'}}>
+              <MaterialCommunityIcons name="refresh" size={26} color="#11458a" style={styles.resendOtpIcon} />
+              <Text style={styles.resendOtpText}>Resend OTP</Text>
+            </TouchableOpacity>
+            </View>
+          )}
+          <CustomButton
+            title={loading ? 'Sending OTP...' : showOtp ? 'Verify OTP' : 'Send OTP'}
+            onPress={showOtp ? verifyOtp : sendOtp}
+            disabled={loading}
+          />
+        </View>
 
-{/* BOTTOM SECTION */}
-<View
-  style={{
+        {/* BOTTOM SECTION */}
+        <View style={styles.bottomSection}>
+          {/* Left: Live Chat + Talk to Us */}
+          <View style={styles.bottomLeftContainer}>
+            <View style={styles.iconContainer}>
+              <Image
+                source={live_chat}
+                style={[styles.icon, { width: horizontalScale(44), height: verticalScale(44) }]}
+              />
+              <Text style={styles.iconText}>Live Chat</Text>
+            </View>
+            <View style={styles.iconContainer}>
+              <Image
+                source={talk_to_us}
+                style={[styles.icon, { width: horizontalScale(44), height: verticalScale(40) }]}
+              />
+              <Text style={styles.iconText}>Talk to Us</Text>
+            </View>
+          </View>
+
+          {/* Right: Logo */}
+          <View style={styles.bottomRightContainer}>
+            <Image
+              source={logo}
+              style={styles.bottomLogo}
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    </GradientLayout>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 24,
+    marginTop: 36
+  },
+  topSection: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 48
+  },
+  logo: {
+    width: 190,
+    height: 85,
+    marginBottom: 16
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 50,
+    paddingHorizontal: 20,
+    paddingVertical: 4,
+    width: '100%',
+    marginBottom: 16,
+    backgroundColor: 'white'
+  },
+  input: {
+    flex: 1,
+    color: '#111827',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginLeft: 10
+  },
+  bottomSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     width: '100%',
+    marginBottom: verticalScale(12)
+  },
+  bottomLeftContainer: {
+    flexDirection: 'row',
+    width: '50%',
+    justifyContent: 'space-around',
+    alignItems: 'center'
+  },
+  iconContainer: {
+    alignItems: 'center'
+  },
+  icon: {
+    marginBottom: verticalScale(4)
+  },
+  iconText: {
+    fontSize: moderateScale(12)
+  },
+  bottomRightContainer: {
+    width: '50%',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  bottomLogo: {
+    width: horizontalScale(90),
+    height: verticalScale(40),
+    resizeMode: 'contain'
+  },
+  resendOtpContainer: {
     marginBottom: verticalScale(12),
-  }}
->
-  {/* Left: Live Chat + Talk to Us */}
-  <View
-    style={{
-      flexDirection: 'row',
-      width: '50%',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-    }}
-  >
-    <View style={{ alignItems: 'center' }}>
-      <Image
-        source={live_chat}
-        style={{
-          width: horizontalScale(44),
-          height: verticalScale(44),
-          marginBottom: verticalScale(4),
-        }}
-      />
-      <Text style={{ fontSize: moderateScale(12) }}>Live Chat</Text>
-    </View>
-    <View style={{ alignItems: 'center' }}>
-      <Image
-        source={talk_to_us}
-        style={{
-          width: horizontalScale(44),
-          height: verticalScale(40),
-          marginBottom: verticalScale(4),
-        }}
-      />
-      <Text style={{ fontSize: moderateScale(12) }}>Talk to Us</Text>
-    </View>
-  </View>
-
-  {/* Right: Logo */}
-  <View
-    style={{
-      width: '50%',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    <Image
-      source={logo}
-      style={{
-        width: horizontalScale(90),
-        height: verticalScale(40),
-        resizeMode: 'contain',
-      }}
-    />
-  </View>
-</View>
-</SafeAreaView>
-
-    </GradientLayout>
-  );
-};
+    flexDirection: 'row',
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  resendOtpText: {
+    color: '#11458a',
+    fontSize: moderateScale(14),
+    fontWeight: 'bold'
+  },
+  resendOtpIcon: {
+    marginRight: 10
+  }
+});
 
 export default ForgetPasswordScreen;

@@ -15,7 +15,7 @@ import CompanyRechargeScreen from '../screens/CompanyRechargeScreen';
 import DTHRechargeScreen from '../screens/DTHRechargeScreen';
 import ComissionScreen from '../screens/ComissionScreen';
 import TransactionReportScreen from '../screens/TransactionReportScreen';
-import BalanceCheckScreen from '../screens/BalanceCheckScreen';
+  // import BalanceCheckScreen from '../screens/BalanceCheckScreen';
 import ComplainListScreen from '../screens/ComplainListScreen';
 import StandingReportScreen from '../screens/StandingReportScreen';
 import UserDayBookScreen from '../screens/UserDayBookScreen';
@@ -31,6 +31,16 @@ import WalletTopupScreen from '../screens/WalletTopupScreen';
 import BrowsePlanScreen from '../screens/BrowsePlanScreen';
 import ChangePinScreen from '../screens/ChangePinScreen';
 import ReportsListScreen from '../screens/ReportsListScreen';
+import RechargeReportScreen from '../screens/RechargeReportScreen';
+import BrowsePlanStateSelection from '../screens/BrowsePlanStateSelection';
+import SpecialOffersScreen from '../screens/SpecialOffersScreen';
+import EnableDisablePinScreen from '../screens/EnableDisablePinScreen'  ;
+import AddUserScreen from '../screens/AddUserScreen';
+import RegisterScreen from '../screens/RegisterScreen';
+import OtpVerifyScreen from '../screens/otpVerifyScreen';
+import HomeScreen2 from '../screens/HomeScreen2';
+import ServicesScreen from '../screens/ServicesScreen';
+import BookComplain from '../screens/BookComplain';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -47,7 +57,7 @@ const AppNavigator = () => {
       <Stack.Screen name="DTHRecharge" component={DTHRechargeScreen} />
       <Stack.Screen name="Comission" component={ComissionScreen} />
       <Stack.Screen name="TransactionReport" component={TransactionReportScreen} />
-      <Stack.Screen name="BalanceCheck" component={BalanceCheckScreen} />
+      {/* <Stack.Screen name="BalanceCheck" component={BalanceCheckScreen} /> */}
       <Stack.Screen name="ComplainList" component={ComplainListScreen} />
       <Stack.Screen name="StandingReport" component={StandingReportScreen} />
       <Stack.Screen name="UserDayBook" component={UserDayBookScreen} />
@@ -61,8 +71,18 @@ const AppNavigator = () => {
       <Stack.Screen name="WalletPayment" component={WalletPaymentScreen} />
       <Stack.Screen name="WalletTopup" component={WalletTopupScreen} />
       <Stack.Screen name="BrowsePlan" component={BrowsePlanScreen} />
+      <Stack.Screen name="BrowsePlanStateSelection" component={BrowsePlanStateSelection} />
       <Stack.Screen name="ChangePin" component={ChangePinScreen} />
       <Stack.Screen name="ReportsList" component={ReportsListScreen} />
+      <Stack.Screen name="RechargeReport" component={RechargeReportScreen} />
+      <Stack.Screen name="SpecialOffers" component={SpecialOffersScreen} />
+      <Stack.Screen name="EnableDisablePin" component={EnableDisablePinScreen} />
+      <Stack.Screen name="AddUser" component={AddUserScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="OtpVerify" component={OtpVerifyScreen} />
+        <Stack.Screen name="HomeScreen2" component={HomeScreen2} />
+        <Stack.Screen name="Services" component={ServicesScreen} />
+        <Stack.Screen name="BookComplain" component={BookComplain} />
     </Stack.Navigator>
   );
 };

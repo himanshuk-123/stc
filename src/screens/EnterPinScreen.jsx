@@ -7,7 +7,8 @@ import CustomButton from '../component/button';
 import { horizontalScale, verticalScale, moderateScale } from '../utils/responsive';
 import RechargeService from '../services/RechargeService';
 import { useSelector } from 'react-redux';
-import Constants from 'expo-constants';
+import { handleRecharge } from '../component/Commonfunction';
+//import Constants from 'expo-constants';
 // PIN Input component
 const PinInput = ({ value, showPin }) => {
     return (
@@ -32,76 +33,76 @@ const EnterPinScreen = () => {
   const [pin, setPin] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [error, setError] = useState('');
   // Get transaction details from route params
-    const { mobileNumber = '', amount = '', opcodenew = '' } = route.params || {};
+    const { MobileNo = '', Amount = '', opcodenew = '' } = route.params || {};
   const userData = useSelector(state => state.user);
-  const handleRecharge = async () => {
-    setLoading(true);
+//   const handleRecharge = async () => {
+//     setLoading(true);
 
 
-    const payload = {
-        Token: userData.tokenid,
-        UserID: null,
-        RefTxnId: null,
-        MobileNo: mobileNumber,
-        Operator: opcodenew,
-        CricleId: "12",
-        Amount: amount,
-        Pin: "0000",
-        CircleId: null,
-        MediumId: "1",
-        CircleCode: null,
-        AccountNo: null,
-        AccountOther: null,
-        Optional1: null,
-        Optional2: null,
-        Optional3: null,
-        Optional4: null,
-        Version: Constants?.expoConfig?.version?.split('.')[0] || '1',
-        Location: null,
-    }
-    console.log(payload);
-    try {
-        const response = await RechargeService.RechargeCall(
-            payload.Token,
-            payload.UserID,
-            payload.RefTxnId,
-            payload.MobileNo,
-            payload.Operator,
-            payload.CricleId,
-            payload.Amount,
-            payload.Pin,
-            payload.CircleId,
-            payload.MediumId,
-            payload.CircleCode,
-            payload.AccountNo,
-            payload.AccountOther,
-            payload.Optional1,
-            payload.Optional2,
-            payload.Optional3,
-            payload.Optional4,
-            payload.Version,
-            payload.Location,
-        )
-        console.log(response.data);
-        Alert.alert(
-            response.data.STATUS,
-            response.data.MESSAGE,
-            [
-                {
-                    text: 'OK',
-                    onPress: () => navigation.goBack()
-                }
-            ]
-        );
-    } catch (error) {
-        console.error('Error during recharge:', error);
-        setError('An error occurred while processing the recharge. Please try again.');
-    } finally {
-        setLoading(false);
-    }
-}
+//     const payload = {
+//         Token: userData.tokenid,
+//         UserID: null,
+//         RefTxnId: null,
+//         MobileNo: mobileNumber,
+//         Operator: opcodenew,
+//         CricleId: "12",
+//         Amount: amount,
+//         Pin: pin,
+//         CircleId: null,
+//         MediumId: "1",
+//         CircleCode: null,
+//         AccountNo: null,
+//         AccountOther: null,
+//         Optional1: null,
+//         Optional2: null,
+//         Optional3: null,
+//         Optional4: null,
+//         Version: '1',
+//         Location: null,
+//     }
+//     console.log(payload);
+//     try {
+//         const response = await RechargeService.RechargeCall(
+//             payload.Token,
+//             payload.UserID,
+//             payload.RefTxnId,
+//             payload.MobileNo,
+//             payload.Operator,
+//             payload.CricleId,
+//             payload.Amount,
+//             payload.Pin,
+//             payload.CircleId,
+//             payload.MediumId,
+//             payload.CircleCode,
+//             payload.AccountNo,
+//             payload.AccountOther,
+//             payload.Optional1,
+//             payload.Optional2,
+//             payload.Optional3,
+//             payload.Optional4,
+//             payload.Version,
+//             payload.Location,
+//         )
+//         console.log(response.data);
+//         Alert.alert(
+//             response.data.STATUS,
+//             response.data.MESSAGE,
+//             [
+//                 {
+//                     text: 'OK',
+//                     onPress: () => navigation.goBack()
+//                 }
+//             ]
+//         );
+//     } catch (error) {
+//         console.error('Error during recharge:', error);
+//         setError('An error occurred while processing the recharge. Please try again.');
+//     } finally {
+//         setLoading(false);
+//     }
+// }
   // Handle numeric input
   const handleNumberPress = (num) => {
     if (pin.length < 4) {
@@ -109,18 +110,21 @@ const EnterPinScreen = () => {
     }
   };
 
+  const RechargeProceed = () => {
+    handleRecharge({ userData, MobileNo, opcodenew, Amount, pin, navigation, setLoading, setError });
+  }
   // Handle backspace
   const handleBackspace = () => {
     setPin(prev => prev.slice(0, -1));
   };
 
   // Handle confirm payment
-  const handleConfirmPayment = () => {
-    if (pin.length === 4) {
-      // TODO: Add payment confirmation logic
-      console.log('Processing payment with PIN:', pin);
-    }
-  };
+  // const handleConfirmPayment = () => {
+  //   if (pin.length === 4) {
+  //     // TODO: Add payment confirmation logic
+  //     console.log('Processing payment with PIN:', pin);
+  //   }
+  // };
 
   return (
     <GradientLayout>
@@ -175,7 +179,7 @@ const EnterPinScreen = () => {
 
         {/* Confirm Button */}
         <View style={styles.buttonContainer}>
-          {loading ? <CustomButton title="Proceeding..." disabled /> : <CustomButton title="Proceed" onPress={handleRecharge} disabled={pin.length !== 4} />}
+          {loading ? <CustomButton title="Proceeding..." disabled /> : <CustomButton title="Proceed" onPress={RechargeProceed} disabled={pin.length !== 4} />}
           <TouchableOpacity
             style={styles.forgotPin}
             onPress={() => navigation.navigate('ChangePin')}

@@ -5,5 +5,12 @@ export const PlanService = {
         api.post('/DTHINFO', {
             Tokenid, Operator, DTHNO, Version, Location
         })
+    ,
+    SpecialOffers: (Tokenid,Version,Operator,MobileNo, Location) =>
+        api.post('/OperatorPlan', {
+            Tokenid,Version, Operator, MobileNo, Location
+        }),
+    GetBrowsePlan: () =>
+        api.get('/BrowseCircleList')
 }
 

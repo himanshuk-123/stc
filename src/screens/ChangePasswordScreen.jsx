@@ -6,6 +6,8 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  StyleSheet,
+  ScrollView
 } from 'react-native';
 import React, { useState } from 'react';
 import logo from '../../assets/logo.png';
@@ -14,12 +16,14 @@ import talk_to_us from '../../assets/talk_to_us.png';
 import { useNavigation } from '@react-navigation/native';
 import CustomButton from '../component/button';
 import GradientLayout from '../component/GradientLayout';
-import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
-import Constants from 'expo-constants';
+import {Ionicons} from '@expo/vector-icons';
+// import * as Location from 'expo-location';
+// import Constants from 'expo-constants';
 import ApiService from '../services/authService';
 import Header from '../component/Header';
 import { useSelector } from 'react-redux';
+import { horizontalScale, verticalScale } from '../utils/responsive';
+import { handleCallPress } from '../component/Commonfunction';
 
 const ChangePasswordScreen = () => {
   const navigation = useNavigation();
@@ -49,26 +53,12 @@ const ChangePasswordScreen = () => {
     setLoading(true);
 
     try {
-      // Get current location for API payload
-      
-      // This is a placeholder for the actual change password API call
-      // Replace with your actual API call when available
-      // setTimeout(() => {
-      //    Simulate success response
-      //   Alert.alert(
-      //     'Success', 
-      //     'Password changed successfully',
-      //     [{ text: 'OK', onPress: () => navigation.goBack() }]
-      //   );
-      //   setLoading(false);
-      // }, 1500);
 
-      //Actual API call would look like this:
       const payload = {
         TokenID: userData.tokenid,
         Password: newPassword,
         OldPassword: currentPassword,
-        Version: Constants?.expoConfig?.version?.split('.')[0] || '1',
+        Version: '1',
       };
       console.log(payload);
       const response = await ApiService.changePassword(
@@ -95,101 +85,152 @@ const ChangePasswordScreen = () => {
 
   return (
     <GradientLayout>
-      <SafeAreaView className="flex-1 justify-between items-center p-4">
-        <Header headingTitle="Change Password" />
-        
-        {/* Password Inputs Section */}
-        <View className="w-full items-center mt-4">
-          <Image source={logo} className="w-29 h-25 mb-4" />
-          <Text className="text-xl font-bold mb-4">Change Your Password</Text>
+    <SafeAreaView style={styles.container}>
+        <Header headingTitle="Change Password" style={{marginLeft: 10,marginTop: 10}}/>
+        <View style={{flex: 1,justifyContent: 'space-between',alignItems: 'center'}}>
+      <View style={styles.contentContainer}>
+        <Image source={logo} style={styles.logo} />
+        <Text style={styles.title}>Change Your Password</Text>
 
-          {/* Current Password */}
-          <View className="flex-row items-center border rounded-full px-5 p-1 w-full mb-4 bg-white">
-            <Ionicons name="lock-closed" size={24} color="#11458a" />
-            <TextInput
-              placeholder="Current Password"
-              placeholderTextColor="#888"
-              className="flex-1 text-gray-900 font-bold text-lg ml-3"
-              secureTextEntry={secureCurrentPass}
-              value={currentPassword}
-              onChangeText={setCurrentPassword}
-            />
-            <TouchableOpacity onPress={() => setSecureCurrentPass(!secureCurrentPass)}>
-              <Ionicons
-                name={secureCurrentPass ? 'eye-off' : 'eye'}
-                size={24}
-                color="gray"
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* New Password */}
-          <View className="flex-row items-center border rounded-full px-5 p-1 w-full mb-4 bg-white">
-            <Ionicons name="lock-closed" size={24} color="#11458a" />
-            <TextInput
-              placeholder="New Password"
-              placeholderTextColor="#888"
-              className="flex-1 text-gray-900 font-bold text-lg ml-3"
-              secureTextEntry={secureNewPass}
-              value={newPassword}
-              onChangeText={setNewPassword}
-            />
-            <TouchableOpacity onPress={() => setSecureNewPass(!secureNewPass)}>
-              <Ionicons
-                name={secureNewPass ? 'eye-off' : 'eye'}
-                size={24}
-                color="gray"
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* Confirm Password */}
-          <View className="flex-row items-center border rounded-full px-5 p-1 w-full mb-4 bg-white">
-            <Ionicons name="lock-closed" size={24} color="#11458a" />
-            <TextInput
-              placeholder="Confirm New Password"
-              placeholderTextColor="#888"
-              className="flex-1 text-gray-900 font-bold text-lg ml-3"
-              secureTextEntry={secureConfirmPass}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-            />
-            <TouchableOpacity onPress={() => setSecureConfirmPass(!secureConfirmPass)}>
-              <Ionicons
-                name={secureConfirmPass ? 'eye-off' : 'eye'}
-                size={24}
-                color="gray"
-              />
-            </TouchableOpacity>
-          </View>
-
-          <CustomButton
-            title={loading ? 'Changing Password...' : 'Change Password'}
-            onPress={handleChangePassword}
-            disabled={loading}
+        <View style={styles.inputContainer}>
+          <Ionicons name="lock-closed-outline" size={24} color="black" />
+          <TextInput
+            placeholder="Current Password"
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
+            secureTextEntry={!secureCurrentPass}
+            style={styles.input}
+            placeholderTextColor="gray"
           />
+          <TouchableOpacity onPress={() => setSecureCurrentPass(!secureCurrentPass)}>
+            <Ionicons name={secureCurrentPass ? "eye-outline" : "eye-off-outline"} size={24} color="black" />
+          </TouchableOpacity>
         </View>
 
-        {/* Bottom Icons */}
-        <View className="flex-row justify-between items-end w-full mb-3">
-          <View className="flex-row w-1/2 h-full justify-around items-center">
-            <View className="items-center">
-              <Image source={live_chat} className="w-11 h-11 mb-1" />
-              <Text className="text-xs">Live Chat</Text>
-            </View>
-            <View className="items-center">
-              <Image source={talk_to_us} className="w-11 h-10 mb-1" />
-              <Text className="text-xs">Talk to Us</Text>
-            </View>
-          </View>
-
-          <View className="w-1/2 items-center justify-center">
-            <Image source={logo} style={{ width: 90, height: 40 }} />
-          </View>
+        <View style={styles.inputContainer}>
+          <Ionicons name="lock-closed-outline" size={24} color="black" />
+          <TextInput
+            placeholder="New Password"
+            value={newPassword}
+            onChangeText={setNewPassword}
+            secureTextEntry={!secureNewPass}
+            style={styles.input}
+            placeholderTextColor="gray"
+          />
+          <TouchableOpacity onPress={() => setSecureNewPass(!secureNewPass)}>
+            <Ionicons name={secureNewPass ? "eye-outline" : "eye-off-outline"} size={24} color="black" />
+          </TouchableOpacity>
         </View>
-      </SafeAreaView>
+
+        <View style={styles.inputContainer}>
+          <Ionicons name="lock-closed-outline" size={24} color="black" />
+          <TextInput
+            placeholder="Confirm New Password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry={!secureConfirmPass}
+            style={styles.input}
+            placeholderTextColor="gray"
+          />
+          <TouchableOpacity onPress={() => setSecureConfirmPass(!secureConfirmPass)}>
+            <Ionicons name={secureConfirmPass ? "eye-outline" : "eye-off-outline"} size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+
+        <CustomButton title={loading ? 'Loading...' : 'Change Password'} onPress={handleChangePassword} />
+      </View>
+
+      <View style={styles.footer}>
+        <View style={styles.footerLeft}>
+          <View style={styles.footerItem}>
+            <Image source={live_chat} style={styles.footerIcon} />
+            <Text style={styles.footerText}>Live Chat</Text>
+          </View>
+          <TouchableOpacity onPress={handleCallPress}>
+          <View style={styles.footerItem}>
+            <Image source={talk_to_us} style={styles.footerIcon} />
+            <Text style={styles.footerText}>Talk to Us</Text>
+          </View>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.footerRight}>
+          <Image source={logo} style={{ width: 90, height: 40 }} />
+        </View>
+        </View>
+      </View>
+    </SafeAreaView>
     </GradientLayout>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  contentContainer: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  logo: {
+    width: horizontalScale(250),
+    height: verticalScale(100),
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 4,
+    width: '100%',
+    marginBottom: 16,
+    backgroundColor: 'white',
+  },
+  input: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 12,
+    color: '#111827',
+  },
+
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    width: '100%',
+    marginBottom: 12,
+  },
+  footerLeft: {
+    flexDirection: 'row',
+    width: '50%',
+    height: '100%',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  footerRight: {
+    width: '50%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footerItem: {
+    alignItems: 'center',
+  },
+  footerIcon: {
+    width: 44,
+    height: 44,
+    marginBottom: 4,
+  },
+  footerText: {
+    fontSize: 12,
+  },
+});
 
 export default ChangePasswordScreen;

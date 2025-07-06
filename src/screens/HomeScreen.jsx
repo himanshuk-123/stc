@@ -1,7 +1,7 @@
-import { View, Text, SafeAreaView, TouchableOpacity, Image, ScrollView, Animated, ActivityIndicator, Modal, Alert, Dimensions,RefreshControl } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, Image, ScrollView, Animated, ActivityIndicator, Modal, Alert, Dimensions, RefreshControl, Platform, Button, StyleSheet } from 'react-native';
 import React, { useEffect, useState, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import Icon from 'react-native-vector-icons/Feather';
+import {Feather} from '@expo/vector-icons';
 import Cards from '../component/cards';
 import logo from '../../assets/logo.png';
 import live_chat from '../../assets/live_chat.png';
@@ -13,18 +13,17 @@ import CustomButton from '../component/button';
 import GradientLayout from '../component/GradientLayout';
 import { useNavigation } from '@react-navigation/native';
 import CarouselComponent from '../component/Carousel';
-import ReportService from '../services/reportService';
-import Constants from 'expo-constants';
-import { Entypo } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
+import {Entypo} from '@expo/vector-icons';
 import { saveUserData } from '../redux/slices/userSlice';
 import { logout } from '../utils/authUtils';
 import { horizontalScale, verticalScale, moderateScale } from '../utils/responsive';
-import { dashboardHome } from '../component/Commonfunction';
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { dashboardHome, handleCallPress } from '../component/Commonfunction';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
-
+  const isFocused = useIsFocused();
   // Use custom Redux hooks
   const dispatch = useAppDispatch();
   const userData = useAppSelector((state) => state.user);
@@ -34,6 +33,7 @@ const HomeScreen = () => {
   const [showBalanceModal, setShowBalanceModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [amount,setAmount] = useState(0);
 
   const [dashboardData, setDashboardData] = useState({
     closingBalance: '',
@@ -41,6 +41,8 @@ const HomeScreen = () => {
     notification: '',
   });
   const scrollX = useRef(new Animated.Value(0)).current;
+
+
 
   const fetchDashboard = async () => {
     setIsLoading(true);
@@ -53,7 +55,7 @@ const HomeScreen = () => {
       dispatch(saveUserData({
         closingbalance: closingBalance,
         standingbalance: standingBalance,
-        version: Constants?.expoConfig?.version?.split('.')[0] || '1',
+        version: '1',
         location: userData.location,
       }));
 
@@ -73,6 +75,13 @@ const HomeScreen = () => {
     fetchDashboard();
   }, []);
 
+  useEffect(() => {
+    const loadKeys = async () => {
+      console.log("keys", await AsyncStorage.getAllKeys());
+    }
+    loadKeys();
+  }, []);
+
   const balanceCheck = () => {
     setShowBalanceModal(true);
   };
@@ -83,24 +92,24 @@ const HomeScreen = () => {
     logout();
   };
 
-  useEffect(() => {
-    if (dashboardData.notification) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(scrollX, {
-            toValue: -100,
-            duration: 10000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scrollX, {
-            toValue: 0,
-            duration: 0,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-    }
-  }, [dashboardData.notification]);
+  // useEffect(() => {
+  //   if (dashboardData.notification) {
+  //     Animated.loop(
+  //       Animated.sequence([
+  //         Animated.timing(scrollX, {
+  //           toValue: -100,
+  //           duration: 10000,
+  //           useNativeDriver: true,
+  //         }),
+  //         Animated.timing(scrollX, {
+  //           toValue: 0,
+  //           duration: 0,
+  //           useNativeDriver: true,
+  //         }),
+  //       ])
+  //     ).start();
+  //   }
+  // }, [dashboardData.notification]);
 
   // Updated to use the global logout function
   const handleLogout = () => {
@@ -126,12 +135,12 @@ const HomeScreen = () => {
   // };
 
   if (isLoading) {
-    return <ActivityIndicator size="large" color="#0000ff" className='flex-1 justify-center items-center' />;
+    return <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />;
   }
 
   return (
     <GradientLayout>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
         {/* Error Modal */}
         <Modal
           visible={showErrorModal}
@@ -139,15 +148,15 @@ const HomeScreen = () => {
           animationType="fade"
           onRequestClose={handleErrorModalOk}
         >
-          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-            <View className="bg-white p-6 rounded-xl w-4/5 items-center">
-              <Text className="text-xl font-bold mb-4">Alert</Text>
-              <Text className="text-gray-800 text-center mb-6">{errorMessage}</Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Alert</Text>
+              <Text style={styles.modalText}>{errorMessage}</Text>
               <TouchableOpacity
-                className="bg-blue-500 py-3 px-12 rounded-full"
+                style={styles.modalButton}
                 onPress={handleErrorModalOk}
               >
-                <Text className="text-white font-bold text-lg">OK</Text>
+                <Text style={styles.modalButtonText}>OK</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -162,65 +171,85 @@ const HomeScreen = () => {
           statusBarTranslucent={true}
         >
           <TouchableOpacity
-            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+            style={styles.modalOverlay}
             activeOpacity={1}
             onPress={() => setShowBalanceModal(false)}
           >
-            <View className="flex-1 justify-center items-center">
-              <View className="bg-white p-6 rounded-xl w-4/5 items-center">
+            <View style={styles.modalContainer}>
+              <View style={styles.balanceModalContent}>
                 <Image
                   source={logo}
-                  style={{ width: verticalScale(100), height: verticalScale(100), marginBottom: verticalScale(16) }}
+                  style={styles.modalLogo}
                   resizeMode="contain"
                 />
 
-                <Text className="text-xl font-bold text-center mb-4">Your Current Balance</Text>
-                <Text className="text-3xl font-bold text-center mb-6 text-blue-600">
-                  ₹ {userData.closingbalance ? userData.closingbalance : '0.00'}
+                <Text style={styles.balanceTitle}>Your Current Balance</Text>
+                <Text style={styles.balanceAmount}>
+                  ₹ {userData.closingbalance ? parseFloat(userData.closingbalance) : '0.00'}
+                </Text>
+                <Text style={styles.balanceTitle}>Your Outstanding Balance</Text>
+                <Text style={{color:'red',fontSize:30,fontWeight:'bold'}}>
+                  ₹ {userData.standingbalance ? parseInt(userData.standingbalance) : '0.00'}
                 </Text>
 
                 <TouchableOpacity
-                  className="bg-blue-500 py-3 px-12 rounded-full mt-4"
+                  style={styles.balanceModalButton}
                   onPress={() => setShowBalanceModal(false)}
                 >
-                  <Text className="text-white font-bold text-lg">OK</Text>
+                  <Text style={styles.balanceModalButtonText}>OK</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </TouchableOpacity>
         </Modal>
 
-        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchDashboard} />}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollViewContent} 
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={fetchDashboard} />
+          }
+        >
           {/* Header */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(10) }}>
+          <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-              <View style={{ backgroundColor: 'black', padding: 8, borderRadius: 999 }}>
-                <Icon name="menu" size={20} color="white" />
+              <View style={styles.menuButton}>
+                <Feather name="menu" size={20} color="white" />
               </View>
             </TouchableOpacity>
-            <View className="flex-row items-center">
+
+            <View style={{flexDirection:'row',alignItems:'center',gap:10}}>
+            <View style={styles.walletContainer}>
               <Entypo name='wallet' size={30} color="#181869" />
-              <Text className="ml-3 text-lg font-bold ">₹ {userData.closingbalance}</Text>
+              <Text style={{color:'green',fontSize:18,fontWeight:'bold'}}>₹ {userData.closingbalance ? parseFloat(userData.closingbalance) : '0.00'}</Text>
             </View>
+            <View style={[styles.walletContainer]}>
+              <Entypo name='wallet' size={30} color="#181869" />
+              <Text style={styles.balanceText}>₹ {userData.standingbalance ? parseInt(userData.standingbalance) : '0.00'}</Text>
+            </View>
+            </View>
+            {/* <View style={[styles.walletContainer,{marginTop:verticalScale(10),marginBottom:verticalScale(10)}]}>
+              <Entypo name='wallet' size={30} color="#181869" />
+              <Text style={styles.balanceText}>₹ {userData.standingbalance}</Text>
+            </View> */}
             <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
-              <Icon name="bell" size={24} color="black" />
+              <Feather name="bell" size={24} color="black" />
             </TouchableOpacity>
           </View>
 
           {/* Carousel */}
-          <View style={{ marginBottom: verticalScale(10) }}>
+          <View style={styles.carouselContainer}>
             <CarouselComponent />
           </View>
-
           {/* Notification Ticker */}
           {dashboardData.notification && (
-            <View className="bg-yellow-100 p-2 rounded-lg mb-4 overflow-hidden">
+            <View style={styles.notificationContainer}>
               <Animated.Text
-                style={{
-                  transform: [{ translateX: scrollX }],
-                  whiteSpace: 'nowrap',
-                }}
-                className="text-yellow-800 font-medium"
+                style={[
+                  styles.notificationText,
+                  {
+                    transform: [{ translateX: scrollX }],
+                  }
+                ]}
               >
                 {dashboardData.notification}
               </Animated.Text>
@@ -228,12 +257,7 @@ const HomeScreen = () => {
           )}
 
           {/* Row of 2 Cards */}
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            height: verticalScale(140),
-            marginBottom: verticalScale(15)
-          }}>
+          <View style={styles.twoCardsRow}>
             <Cards
               imageSource={add_money}
               title="Add Money"
@@ -265,12 +289,7 @@ const HomeScreen = () => {
           </View>
 
           {/* Row of 3 Smaller Cards */}
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            height: verticalScale(110),
-            marginBottom: verticalScale(15)
-          }}>
+          <View style={styles.threeCardsRow}>
             <Cards
               imageSource={live_chat}
               title="Chat with us"
@@ -293,11 +312,11 @@ const HomeScreen = () => {
               imgheight={verticalScale(50)}
               imgwidth={horizontalScale(50)}
               gradientColors={['#fca9c9', '#c94b7b']}
-              onPress={() => Alert.alert('Support', 'Support feature coming soon')}
               textColor='#fff'
               fontWeight='400'
               style={{ fontSize: moderateScale(14) }}
               cardsPerRow={3}
+              onPress={handleCallPress}
             />
             <Cards
               imageSource={reports_icon}
@@ -316,27 +335,178 @@ const HomeScreen = () => {
           </View>
 
           {/* Logo */}
-          <View style={{ alignItems: 'center', marginVertical: verticalScale(10) }}>
+          <View style={styles.logoContainer}>
             <Image
               source={logo}
-              style={{
-                width: horizontalScale(75),
-                height: verticalScale(30),
-                resizeMode: 'contain'
-              }}
+              style={styles.logo}
             />
           </View>
 
           {/* 2 CustomButtons */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: verticalScale(24) }}>
+          <View style={styles.buttonContainer}>
             <CustomButton width={'48%'} title="Cash Back" onPress={() => Alert.alert('Cashback', 'Cashback feature coming soon')} />
             <CustomButton width={'48%'} title="Check Balance" onPress={balanceCheck} />
           </View>
-          <CustomButton  title="Wallet Topup" onPress={() => navigation.navigate('WalletTopup',{userId: ''})} />
+          {
+            userData.usertype === 'Distributer' && <CustomButton title="Wallet Topup" onPress={() => navigation.navigate('WalletTopup',{userId: ''})} />
+          }
         </ScrollView>
+        {/* <CustomButton title='register' onPress={()=>navigation.navigate('Register')}></CustomButton> */}
       </SafeAreaView>
     </GradientLayout>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
+  loadingIndicator: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center'
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16
+  },
+  modalText: {
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 24
+  },
+  modalButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 9999
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  balanceModalContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center'
+  },
+  modalLogo: {
+    width: verticalScale(100),
+    height: verticalScale(100),
+    marginBottom: verticalScale(16)
+  },
+  balanceTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: verticalScale(10)
+  },
+  balanceAmount: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 24,
+    color: 'green'
+  },
+  balanceModalButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 9999,
+    marginTop: 16
+  },
+  balanceModalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18
+  },
+  scrollViewContent: {
+    paddingHorizontal: 16,
+    paddingTop: 12
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: verticalScale(10)
+  },
+  menuButton: {
+    backgroundColor: 'black',
+    padding: 8,
+    borderRadius: 9999
+  },
+  walletContainer: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  balanceText: {
+    marginLeft: 12,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'red'
+  },
+  carouselContainer: {
+    marginBottom: verticalScale(10)
+  },
+  notificationContainer: {
+    backgroundColor: '#fef9c3',
+    padding: 8,
+    borderRadius: 8,
+    marginBottom: 16,
+    overflow: 'hidden'
+  },
+  notificationText: {
+    color: '#854d0e',
+    fontWeight: '500'
+  },
+  twoCardsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    height: verticalScale(140),
+    marginBottom: verticalScale(15)
+  },
+  threeCardsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    height: verticalScale(110),
+    marginBottom: verticalScale(15)
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginVertical: verticalScale(10)
+  },
+  logo: {
+    width: horizontalScale(75),
+    height: verticalScale(30),
+    resizeMode: 'contain'
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: verticalScale(24)
+  }
+});
 
 export default HomeScreen;

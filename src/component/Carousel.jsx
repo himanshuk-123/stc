@@ -1,19 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Image, Dimensions, StyleSheet, ActivityIndicator } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
-// import ApiService, { IMAGE_BASE_URL } from '../services/commonServices';
-
-
-// import COMMON_SERVICE, { IMAGE_BASE_URL } from '../services/commonServices';
 import ApiService, { IMAGE_BASE_URL } from '../services/authService';
-const screenWidth = Dimensions.get("window").width;
-import { moderateScale, horizontalScale, verticalScale } from '../utils/responsive';
 
-const CarouselComponent = ({width, height}) => {
+const CarouselComponent = ({ width, height }) => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const cardWidth = width;
-  const cardHeight = height;
+  const [screenWidth, setScreenWidth] = useState(Dimensions.get("window").width);
+
   useEffect(() => {
     const fetchSliderData = async () => {
       try {
@@ -37,6 +31,15 @@ const CarouselComponent = ({width, height}) => {
     };
 
     fetchSliderData();
+
+    // ✅ Listen for screen orientation or dimension change
+    const subscription = Dimensions.addEventListener("change", ({ window }) => {
+      setScreenWidth(window.width);
+    });
+
+    return () => {
+      subscription?.remove?.(); // For RN >= 0.65
+    };
   }, []);
 
   if (loading) {
@@ -46,8 +49,8 @@ const CarouselComponent = ({width, height}) => {
   return (
     <View style={styles.container}>
       <Carousel
-        width={screenWidth-40}
-        height={150}
+        width={screenWidth - 40}
+        height={height || 150}
         autoPlay
         autoPlayInterval={3000}
         data={images}
@@ -78,5 +81,3 @@ const styles = StyleSheet.create({
 });
 
 export default CarouselComponent;
-
-

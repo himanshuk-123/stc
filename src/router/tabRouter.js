@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Icon from 'react-native-vector-icons/Feather';
+import {Feather} from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen'
 import ServicesScreen from '../screens/ServicesScreen';
 import MoreScreen from '../screens/MoreScreen';
@@ -18,7 +18,7 @@ export default function TabRouter() {
           else if (route.name === 'Services') iconName = 'grid';
           else if (route.name === 'More') iconName = 'more-horizontal';
 
-          return <Icon name={iconName} size={size} color={color} />;
+          return <Feather name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: 'blue',
         tabBarInactiveTintColor: 'gray',

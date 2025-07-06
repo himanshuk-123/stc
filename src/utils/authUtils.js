@@ -11,19 +11,18 @@ import { clearUserData, saveUserData } from '../redux/slices/userSlice';
 export const logout = async () => {
   try {
     console.log('Starting logout process...');
-    
-    // First ensure Redux store is cleared
+
+    // Clear Redux state
     await store.dispatch(clearUserData());
-    console.log('Redux store cleared');
-    
-    // Then clear AsyncStorage
-    await AsyncStorage.clear();
-    console.log('AsyncStorage cleared');    
-    console.log('Logged out successfully');
+    console.log('Redux user data cleared');
+
+    // AsyncStorage already handled in clearUserData thunk
+    console.log('Logout completed, savedLogin preserved ✅');
   } catch (error) {
     console.error('Error during logout:', error);
   }
 };
+
 
 /**
  * Handles user login by saving user data to Redux store

@@ -12,12 +12,7 @@ import {
   ActivityIndicator,
   Modal
 } from "react-native";
-import {
-  FontAwesome5,
-  MaterialIcons,
-  Entypo,
-  Ionicons,
-} from "@expo/vector-icons";
+import {FontAwesome5,MaterialIcons,Entypo,Ionicons} from "@expo/vector-icons";
 import Header from "../component/Header";
 import GradientLayout from "../component/GradientLayout";
 import ReportService from "../services/reportService";
@@ -86,81 +81,80 @@ export default function UserDayBookScreen() {
 
   return (
     <GradientLayout>
-  <SafeAreaView style={{ padding: 16 }}>
-  <Modal
+      <SafeAreaView style={{ padding: 16 }}>
+        <Modal
           visible={showErrorModal}
           transparent={true}
           animationType="fade"
           onRequestClose={handleErrorModalOk}
         >
-          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-            <View className="bg-white p-6 rounded-xl w-4/5 items-center">
-              <Text className="text-xl font-bold mb-4">Alert</Text>
-              <Text className="text-gray-800 text-center mb-6">{errorMessage}</Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Alert</Text>
+              <Text style={styles.modalMessage}>{errorMessage}</Text>
               <TouchableOpacity
-                className="bg-blue-500 py-3 px-12 rounded-full"
+                style={styles.modalButton}
                 onPress={handleErrorModalOk}
               >
-                <Text className="text-white font-bold text-lg">OK</Text>
+                <Text style={styles.modalButtonText}>OK</Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
-    <Header headingTitle="User Day Book" />
+        <Header headingTitle="User Day Book" />
 
-    {/* 🟧 Summary Section */}
-    <View style={styles.card}>
-      <View style={styles.row}>
-        <Text style={styles.label}>Opening Balance:</Text>
-        <Text style={styles.value}>₹{data?.Openingbalance || '0'}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Received:</Text>
-        <Text style={styles.value}>₹{data?.Receive || '0'}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Transfer:</Text>
-        <Text style={styles.value}>₹{data?.Transfer || '0'}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Commission:</Text>
-        <Text style={styles.value}>₹{data?.Commission || '0'}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Request Amount:</Text>
-        <Text style={styles.value}>₹{data?.ReqAmt || '0'}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Current Balance:</Text>
-        <Text style={[styles.value, { color: "#22c55e" }]}>₹{data?.Currentamount || '0'}</Text>
-      </View>
-    </View>
+        {/* 🟧 Summary Section */}
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Text style={styles.label}>Opening Balance:</Text>
+            <Text style={styles.value}>₹{data?.Openingbalance || '0'}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Received:</Text>
+            <Text style={styles.value}>₹{data?.Receive || '0'}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Transfer:</Text>
+            <Text style={styles.value}>₹{data?.Transfer || '0'}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Commission:</Text>
+            <Text style={styles.value}>₹{data?.Commission || '0'}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Request Amount:</Text>
+            <Text style={styles.value}>₹{data?.ReqAmt || '0'}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Current Balance:</Text>
+            <Text style={[styles.value, { color: "#22c55e" }]}>₹{data?.Currentamount || '0'}</Text>
+          </View>
+        </View>
 
-    {/* 🟦 Transactions Section */}
-    <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>Today’s Transactions</Text>
-    {
-      data?.TodayData?.length > 0 ? (
-        <FlatList
-          data={data.TodayData}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              {/* Customize this as per the item structure */}
-              <Text style={styles.label}>Txn ID: {item.TransactionID}</Text>
-              <Text style={styles.label}>Amount: ₹{item.Amount}</Text>
-              <Text style={styles.label}>Status: {item.Status}</Text>
-            </View>
-          )}
-        />
-      ) : (
-        <Text style={{ textAlign: 'center', marginTop: 20, color: 'gray' }}>
-          No transactions found today.
-        </Text>
-      )
-    }
-  </SafeAreaView>
-</GradientLayout>
-
+        {/* 🟦 Transactions Section */}
+        <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 16 }}>Today's Transactions</Text>
+        {
+          data?.TodayData?.length > 0 ? (
+            <FlatList
+              data={data.TodayData}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <View style={styles.card}>
+                  {/* Customize this as per the item structure */}
+                  <Text style={styles.label}>Txn ID: {item.TransactionID}</Text>
+                  <Text style={styles.label}>Amount: ₹{item.Amount}</Text>
+                  <Text style={styles.label}>Status: {item.Status}</Text>
+                </View>
+              )}
+            />
+          ) : (
+            <Text style={{ textAlign: 'center', marginTop: 20, color: 'gray' }}>
+              No transactions found today.
+            </Text>
+          )
+        }
+      </SafeAreaView>
+    </GradientLayout>
   );
 }
 
@@ -234,4 +228,38 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     marginVertical: 4,
   },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center'
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16
+  },
+  modalMessage: {
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 24
+  },
+  modalButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 25
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18
+  }
 });

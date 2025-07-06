@@ -7,24 +7,26 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
-  Alert
+  Alert,
+  StyleSheet
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { FontAwesome } from '@expo/vector-icons';
-import Checkbox from 'expo-checkbox';
+import {FontAwesome} from '@expo/vector-icons';
+// import Checkbox from 'expo-checkbox';
 import GradientLayout from '../component/GradientLayout';
 import Header from '../component/Header';
 import CustomButton from '../component/button';
 import WalletPayment from '../services/WalletPaymentService';
 import { useNavigation } from '@react-navigation/native';
-import Constants from 'expo-constants';
+// import Constants from 'expo-constants';
 import ReportService from '../services/reportService';
+
 const WalletTopupScreen = ({ route }) => {
   const { userId } = route.params;
-    const userData = useSelector(state => state.user);
-    const [showErrorModal, setShowErrorModal] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [data, setData] = useState([]);
+  const userData = useSelector(state => state.user);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [data, setData] = useState([]);
   const [selectedUser, setSelectedUser] = useState(userId||null);
   const [amount, setAmount] = useState('');
   const [transactionType, setTransactionType] = useState('TOPUP');
@@ -37,9 +39,9 @@ const WalletTopupScreen = ({ route }) => {
       setLoading(true);
       try {
         const payload = {
-            Tokenid: userData.tokenid,
-            Version: Constants?.expoConfig?.version?.split(".")[0] || "1",
-            Location: null,
+          Tokenid: userData.tokenid,
+          Version: "1",
+          Location: null,
         };
 
         const response = await ReportService.MEMBERLIST(
@@ -56,19 +58,19 @@ const WalletTopupScreen = ({ route }) => {
         if(data.ERROR === '0'){
           if(data.MEMBERLIST==null){
             Alert.alert("Error", data.MESSAGE,
-            [
-              {
-                text: "OK",
-                onPress: () => {
-                  navigation.goBack();
+              [
+                {
+                  text: "OK",
+                  onPress: () => {
+                    navigation.goBack();
+                  },
                 },
-              },
-            ]
-          );
-        }else{
-          setData(data.MEMBERLIST);
+              ]
+            );
+          }else{
+            setData(data.MEMBERLIST);
+          }
         }
-      }
         else{
           Alert.alert("Error", data.MESSAGE,
             [
@@ -88,13 +90,13 @@ const WalletTopupScreen = ({ route }) => {
       }
     };
 
-        MemberList(); // Fetch all on mount
+    MemberList(); // Fetch all on mount
   }, []);
 
   const handleSubmit = async () => {
     setLoading(true);
     try{
-    const payload = {
+      const payload = {
         Tokenid:userData.tokenid,
         UserID:selectedUser ,
         TYPE:transactionType,
@@ -104,9 +106,9 @@ const WalletTopupScreen = ({ route }) => {
         SMS:smsOff,
         Version:userData.version,
         Location:null,
-    };
-    console.log('Submit Payload:', payload);
-    const response = await WalletPayment.WalletTopup(
+      };
+      console.log('Submit Payload:', payload);
+      const response = await WalletPayment.WalletTopup(
         payload.Tokenid,
         payload.UserID,
         payload.TYPE,
@@ -116,56 +118,57 @@ const WalletTopupScreen = ({ route }) => {
         payload.SMS,
         payload.Version,
         payload.Location
-    );
-    console.log('Response:', response.data);
-    if(response.data.Error === "0"){
+      );
+      console.log('Response:', response.data);
+      if(response.data.Error === "0"){
         Alert.alert(
-            'Success',
-            response.data.Message,
-            [
-                {
-                    text: 'OK',
-                    onPress: () => navigation.replace('MainTabs')
-                }
-            ]
+          'Success',
+          response.data.Message,
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.replace('MainTabs')
+            }
+          ]
         );
-    }else{
+      }else{
         Alert.alert('Error', response.data.Message);
-    }
+      }
     }catch(error){
-        console.log('Error:', error);
+      console.log('Error:', error);
     }finally{
-        setLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <GradientLayout>
-      <SafeAreaView className="p-4 flex-1">
+      <SafeAreaView style={styles.container}>
         <Header headingTitle="Wallet Topup" screenName="WalletTopupScreen" />
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="bg-white rounded-xl p-6">
-            <View className="border border-black rounded-full overflow-hidden mb-4">
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.card}>
+            <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={selectedUser}
                 onValueChange={(itemValue) => setSelectedUser(itemValue)}
+                style={styles.picker}
               >
-                <Picker.Item label="Select a user" value={null} />
+                <Picker.Item label="Select a user..." value={null} />
                 {data.map((item) => (
                   <Picker.Item
                     key={item.Userid.toString()}
-                    label={`${item.FullName} (${item.MobileNumber})`}
+                    label={`${item.FullName} ${item.MobileNumber}`}
                     value={item.Userid}
                   />
                 ))}
               </Picker>
             </View>
 
-            <View className="bg-white rounded-full flex-row items-center px-6 mb-4 border border-black" style={{ height: 60 }}>
+            <View style={styles.amountContainer}>
               <FontAwesome name="rupee" size={36} color="#f72343" />
               <TextInput
                 placeholder="Amount"
-                className="flex-1 py-2 text-gray-700 pl-6 font-bold text-2xl"
+                style={styles.amountInput}
                 placeholderTextColor="#888"
                 keyboardType="numeric"
                 value={amount}
@@ -173,48 +176,113 @@ const WalletTopupScreen = ({ route }) => {
               />
             </View>
 
-            <Text className="text-lg font-bold mb-2">Transaction Type</Text>
-            <View className="flex-row mb-4">
+            <Text style={styles.transactionTypeText}>Transaction Type</Text>
+            <View style={styles.radioContainer}>
               <TouchableOpacity
                 onPress={() => setTransactionType('TOPUP')}
-                className="flex-row items-center mr-4"
+                style={styles.radioButton}
               >
-                <View className="h-6 w-6 rounded-full border border-gray-400 items-center justify-center mr-2">
-                  {transactionType === 'TOPUP' && <View className="h-4 w-4 bg-blue-500 rounded-full" />}
+                <View style={styles.radioOuter}>
+                  {transactionType === 'TOPUP' && <View style={styles.radioInner} />}
                 </View>
                 <Text>Topup</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setTransactionType('PULLOUT')}
-                className="flex-row items-center"
+                style={styles.radioButton}
               >
-                <View className="h-6 w-6 rounded-full border border-gray-400 items-center justify-center mr-2">
-                    {transactionType === 'PULLOUT' && <View className="h-4 w-4 bg-blue-500 rounded-full" />}
+                <View style={styles.radioOuter}>
+                  {transactionType === 'PULLOUT' && <View style={styles.radioInner} />}
                 </View>
                 <Text>Pullout</Text>
               </TouchableOpacity>
             </View>
-
-
-            <View className="flex-row items-center mb-5 mt-5 ">
-              <Checkbox
-                value={smsOff === 'ON'}
-                onValueChange={() => setSmsOff(smsOff === 'OFF' ? 'ON' : 'OFF')}
-              />
-              <Text className="ml-2">{`SMS ${smsOff}`}</Text>
-            </View>
-
             <CustomButton
-            title={loading ? 'Submitting...' : 'Submit'}
-            onPress={handleSubmit}
-            disabled={loading}
-          />
+              title={loading ? 'Submitting...' : 'Submit'}
+              onPress={handleSubmit}
+              disabled={loading}
+            />
           </View>
         </ScrollView>
       </SafeAreaView>
     </GradientLayout>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16
+  },
+  scrollView: {
+    flex: 1
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 24
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: 'black',
+    borderRadius: 50,
+    overflow: 'hidden',
+    marginBottom: 16
+  },
+  picker: {
+    color: '#000000',
+    height: 50
+  },
+  amountContainer: {
+    backgroundColor: 'white',
+    borderRadius: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'black',
+    height: 60
+  },
+  amountInput: {
+    flex: 1,
+    paddingVertical: 8,
+    color: '#374151',
+    paddingLeft: 24,
+    fontWeight: 'bold',
+    fontSize: 24
+  },
+  transactionTypeText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8
+  },
+  radioContainer: {
+    flexDirection: 'row',
+    marginBottom: 16
+  },
+  radioButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16
+  },
+  radioOuter: {
+    height: 24,
+    width: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#9CA3AF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8
+  },
+  radioInner: {
+    height: 16,
+    width: 16,
+    backgroundColor: '#3B82F6',
+    borderRadius: 8
+  }
+});
 
 export default WalletTopupScreen;

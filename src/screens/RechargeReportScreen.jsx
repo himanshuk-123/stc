@@ -9,20 +9,19 @@ import {
   SafeAreaView,
   Alert,
   FlatList,
+  Image,
+  ActivityIndicator,
+  Touchable
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import {
-  FontAwesome5,
-  MaterialIcons,
-  Entypo,
-  Ionicons,
-} from "@expo/vector-icons";
+import {FontAwesome5,MaterialIcons,Entypo,Ionicons} from "@expo/vector-icons";
 import Header from "../component/Header";
 import GradientLayout from "../component/GradientLayout";
 import ReportService from "../services/reportService";
 import Constants from "expo-constants";
 import { useSelector, useDispatch } from 'react-redux';
-
+import { verticalScale } from "../utils/responsive";
+import { useNavigation } from "@react-navigation/native";
 // Helper functions
 const formatDate = (date) => {
   const day = ("0" + date.getDate()).slice(-2);
@@ -41,25 +40,28 @@ const isValidDate = (dateStr) =>
   /^\d{2}-\d{2}-\d{4}$/.test(dateStr) && parseDate(dateStr) !== null;
 
 export default function RechargeReport() {
+  const [showDate, setShowDate] = useState(false);
   const [services, setServices] = useState([]);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showPicker, setShowPicker] = useState({ from: false, to: false });
   const dispatch = useDispatch();
   const userData = useSelector((state) => state.user);
-
+  const navigation = useNavigation();
   const payload = {
     Tokenid: userData.tokenid,
-    Startdate: fromDate || "",
+    Startdate: null,
     status: null,
-    Enddate: toDate || "",
-    MobileNo: userData.mobilenumber,
+    Enddate: null,
+    MobileNo: null,
     Version: Constants?.expoConfig?.version?.split(".")[0] || "1",
     Location: null,
   };
 
   useEffect(() => {
-    
+    console.log("Himanshu Kasoudhan: ",payload)
+    setLoading(true);
   const fetchTransactions = async (filtered = false) => {
     try {
       const response = await ReportService.RechargeReport(
@@ -71,8 +73,9 @@ export default function RechargeReport() {
         payload.Version,
         payload.Location
       );
+
       const data = response.data;
-        console.log(data)
+        console.log("Response data: ", data)
       if (data.ERROR === "0") {
         const formattedData = data.REPORT.map((item, index) => ({
           id: index.toString(),
@@ -93,6 +96,8 @@ export default function RechargeReport() {
       }
     } catch (error) {
       Alert.alert("Error", error.message);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -121,62 +126,147 @@ export default function RechargeReport() {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardHeaderText}>
-          Transaction ID: {item.TranscationID}
+    <View key={item.id} style={{
+      backgroundColor: 'white',
+      borderRadius: 8,
+      padding: 16,
+      marginBottom: 12,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+      elevation: 2,
+    }}>
+      {/* Card Header */}
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12
+      }}>
+        <View>
+        <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'blue', flexShrink: 1 }}>
+          Recharge ID: {item.RechargeID}
         </Text>
+         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+        <MaterialIcons name="date-range" size={16} color="black" />
+        <Text style={{ marginLeft: 6, color: 'purple' }}>Date: {new Date(item.Date).toLocaleDateString()}</Text>
+      </View>
+        </View>
+        <View style={{flexDirection: 'column', alignItems: 'center'}}>
+        <Image
+          source={{ uri: `https://onlinerechargeservice.in/${item.images.replace(/^~\//, '')}` }}
+          style={{ width: 40, height: 40, resizeMode: 'contain' }}
+        />
+        <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'green' }}>
+          ₹ {item.Amount}
+        </Text>
+        </View>
       </View>
 
-      <View style={styles.row}>
-        <MaterialIcons name="date-range" size={20} />
-        <Text style={styles.label}>Date</Text>
-        <Text style={styles.value}>{item.Date}</Text>
-      </View>
-      <View style={styles.separator} />
+      {/* User Info */}
+      <Text style={{ fontSize: 15, fontWeight: '600', marginBottom: 8, color: 'purple' }}>
+        {item.FullName}
+      </Text>
 
-      <View style={styles.row}>
-        <Entypo name="info-with-circle" size={20} />
-        <Text style={styles.label}>Type</Text>
-        <Text style={styles.value}>{item.Type}</Text>
+      {/* Mobile Number */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+        <MaterialIcons name="phone" size={16} color="green" />
+        <Text style={{ marginLeft: 6, color: 'purple' }}>Mobile: {item.MobileNO}</Text>
       </View>
-      <View style={styles.separator} />
 
-      <View style={styles.row}>
-        <FontAwesome5 name="wallet" size={18} />
-        <Text style={styles.label}>Opening Balance</Text>
-        <Text style={styles.value}>{item.OpeningBalance}</Text>
+      {/* Operator */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+        <MaterialIcons name="sim-card" size={16} color="red" />
+        <Text style={{ marginLeft: 6, color: 'purple' }}>Recharge of {item.Operator} Mobile</Text>
       </View>
-      <View style={styles.separator} />
-
-      <View style={styles.row}>
-        <FontAwesome5 name="money-check-alt" size={18} />
-        <Text style={styles.label}>Closing Balance</Text>
-        <Text style={styles.value}>{item.ClosingBalance}</Text>
+      {/* Amount */}
+      <View style={{
+        marginTop: 12,
+        backgroundColor: '#f0f0f0',
+        padding: 12,
+        borderRadius: 8,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <Text style={{ 
+          fontWeight: '600', 
+          color: item.Status === 'Success' ? 'green' : 'red',
+          backgroundColor: item.Status === 'Success' ? '#e0ffe0' : '#ffe0e0',
+          paddingHorizontal: 8,
+          paddingVertical: 4,
+          borderRadius: 12
+        }}>
+          {item.Status}
+        </Text>
+        <TouchableOpacity style={{
+          backgroundColor: 'green',padding: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center'}}
+          onPress={() =>navigation.navigate('CompanyRecharge',{operator: item, mode: '1' })}
+          >
+          <Text style={{color: 'white'}}>Repeat</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={{
+          backgroundColor: '#4f46e5',padding: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center'}}>
+          <Text style={{color: 'white'}}>Print</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={{
+          backgroundColor: 'red',padding: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center'}}
+          onPress={() => navigation.navigate('BookComplain', { operator: item})}
+          >
+          <Text style={{color: 'white'}}>Complain</Text>
+        </TouchableOpacity>
       </View>
-      <View style={styles.separator} />
-
-      <View style={styles.row}>
-        <Ionicons name="arrow-down-circle-outline" size={20} color="green" />
-        <Text style={styles.label}>Credit Amount</Text>
-        <Text style={styles.value}>{item.CreditAmount}</Text>
-      </View>
-      <View style={styles.separator} />
-
-      <View style={styles.row}>
-        <Ionicons name="arrow-up-circle-outline" size={20} color="red" />
-        <Text style={styles.label}>Debit Amount</Text>
-        <Text style={styles.value}>{item.DebitAmount}</Text>
-      </View>
-    </View>
+        </View>
   );
-
+  if(loading){
+    return (
+      <GradientLayout>
+        <ActivityIndicator size="large" color="#0000ff" style={{flex:1, justifyContent:'center', alignItems:'center'}} />
+      </GradientLayout>
+    )
+  }
   return (
     <GradientLayout>
       <SafeAreaView style={{ padding: 16 }}>
-        <Header headingTitle="All Transaction Reports" />
+        <Header headingTitle="Recharge Report" />
 
         {/* Date Inputs */}
+        {/* <TouchableOpacity
+          onPress={() => setShowDate(!showDate)}
+          style={{ padding: 8 }}
+        >
+        <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        // backgroundColor: 'white',
+        padding: 16,
+        borderRadius: 8,
+        marginBottom: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+      }}>
+        <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center',gap:verticalScale(10)}}>
+        <Text style={{ fontSize: 16, fontWeight: '600', color: 'blue' }}>
+          Filter by Date
+        </Text>
+        
+        <FontAwesome5 name="filter" size={20} color="purple" />
+        </View>
+       
+          <FontAwesome5 
+            name="calendar" 
+            size={20} 
+            color={showDate ? '#3b82f6' : '#666'} 
+          />
+      </View>
+        </TouchableOpacity> */}
+        {showDate ? 
+        (<View>
         <View style={styles.dateRow}>
           <View style={styles.dateInput}>
             <TouchableOpacity
@@ -245,6 +335,10 @@ export default function RechargeReport() {
         <TouchableOpacity style={styles.searchButton} onPress={onSearch}>
           <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
+</View>
+) : (
+null
+)}
 
         {/* List */}
         <FlatList

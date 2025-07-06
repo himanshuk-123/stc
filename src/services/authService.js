@@ -30,9 +30,9 @@ const ApiService = {
       Mobileno,Version,IP,Location
     } ),
 
-  forgetPassword: (Mobileno, Password, Version, OTP) =>
+  forgetPassword: (UserName,OTP, Password, Version, IP, Location) =>
     api.post('/ForgetPass', {
-      Mobileno, Password, Version, OTP
+      UserName, OTP, Password, Version, IP, Location
     }),
     changePin:(TokenID,OldPin,NewPin,Version) => 
       api.post('/ChangePin',{

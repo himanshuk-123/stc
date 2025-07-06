@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, FlatList, Modal, Text, TouchableOpacity, Dimensions, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, SafeAreaView, FlatList, Modal, Text, TouchableOpacity, Dimensions, TextInput, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import Header from '../component/Header';
-import SearchBar from '../component/SearchBar';
 import Cards from '../component/cards';
 import RechargeApiServices from '../services/RechargeService';
-import Constants from 'expo-constants';
+//import Constants from 'expo-constants';
 import GradientLayout from '../component/GradientLayout';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { horizontalScale, verticalScale, moderateScale } from '../utils/responsive';
 import { logout } from '../utils/authUtils';
-import { Ionicons } from '@expo/vector-icons';
+import {Ionicons} from '@expo/vector-icons';
 import axios from 'axios';
 
 
@@ -37,7 +36,7 @@ const MobileRechargeScreen = () => {
       const payload = {
         Tokenid: token,
         mode: mode,
-        Version: Constants?.expoConfig?.version?.split('.')[0] || '1',
+        Version: '1',
         Location: null,
       };
       console.log('Payload:', payload);
@@ -94,7 +93,7 @@ const MobileRechargeScreen = () => {
         imgwidth={horizontalScale(50)}
         gradientColors={['#ffffff', '#ffffff']}
         style={{ fontSize: moderateScale(12) }}
-        onPress={() => navigation.navigate('CompanyRecharge', { operator: item, mode: mode, opcodenew: item.opcodenew })}
+        onPress={() => navigation.navigate('CompanyRecharge', {operator: item, mode: mode, opcodenew: item.opcodenew })}
         cardsPerRow={3}
       />
     </View>
@@ -162,60 +161,11 @@ const MobileRechargeScreen = () => {
         paddingVertical: verticalScale(16),
         paddingHorizontal: horizontalScale(16)
       }}>
-        {/* <Modal
-          visible={showErrorModal}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={handleErrorModalOk}
-        >
-          <View style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(0,0,0,0.5)'
-          }}>
-            <View style={{
-              backgroundColor: 'white',
-              padding: moderateScale(24),
-              borderRadius: moderateScale(16),
-              width: '80%',
-              alignItems: 'center'
-            }}>
-              <Text style={{
-                fontSize: moderateScale(20),
-                fontWeight: 'bold',
-                marginBottom: verticalScale(16)
-              }}>Alert</Text>
-              <Text style={{
-                color: '#333',
-                textAlign: 'center',
-                marginBottom: verticalScale(24)
-              }}>{errorMessage}</Text>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#3b82f6',
-                  paddingVertical: verticalScale(12),
-                  paddingHorizontal: horizontalScale(48),
-                  borderRadius: 9999
-                }}
-                onPress={handleErrorModalOk}
-              >
-                <Text style={{
-                  color: 'white',
-                  fontWeight: 'bold',
-                  fontSize: moderateScale(18)
-                }}>OK</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal> */}
         <Header headingTitle="Mobile Recharge" />
-        <View className="bg-white rounded-full flex-row items-center px-4 mb-4"
-          style={{ height: 50 }}
-        >
+        <View style={styles.searchContainer}>
           <TextInput
             placeholder="Enter Mobile No"
-            className="flex-1 py-2 text-gray-700 font-bold text-lg"
+            style={styles.input}
             placeholderTextColor="#888"
             value={phoneNumber}
             onChangeText={handleInputChange}
@@ -238,5 +188,26 @@ const MobileRechargeScreen = () => {
     </GradientLayout>
   );
 };
+
+const styles = StyleSheet.create({
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    backgroundColor: 'white',
+    borderRadius: 9999,
+    paddingHorizontal: 15,
+    marginBottom: 4,
+    height: 50
+  },
+  input: {
+    paddingHorizontal: 10,
+    color: 'gray',
+    fontSize: 16,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+});
+
 
 export default MobileRechargeScreen;

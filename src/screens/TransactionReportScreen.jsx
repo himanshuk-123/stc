@@ -12,12 +12,7 @@ import {
   ActivityIndicator,
   Modal,
 } from "react-native";
-import {
-  FontAwesome5,
-  MaterialIcons,
-  Entypo,
-  Ionicons,
-} from "@expo/vector-icons";
+import {FontAwesome5,MaterialIcons,Entypo,Ionicons} from "@expo/vector-icons";
 import Header from "../component/Header";
 import GradientLayout from "../component/GradientLayout";
 import ReportService from "../services/reportService";
@@ -116,14 +111,14 @@ export default function TransactionReportScreen() {
       </View>
 
       <View style={styles.row}>
-        <MaterialIcons name="date-range" size={20} />
+        <MaterialIcons name="date-range" size={20} color="red" />
         <Text style={styles.label}>Date</Text>
         <Text style={styles.value}>{new Date(item.Date).toLocaleString()}</Text>
       </View>
       <View style={styles.separator} />
 
       <View style={styles.row}>
-        <Entypo name="info-with-circle" size={20} />
+        <Entypo name="info-with-circle" size={20} color="brown" />
         <Text style={styles.label}>Type</Text>
         <View style={styles.valueContainer}>
           <Text style={styles.value}>{item.Type}</Text>
@@ -132,14 +127,14 @@ export default function TransactionReportScreen() {
       <View style={styles.separator} />
 
       <View style={styles.row}>
-        <FontAwesome5 name="wallet" size={18} />
+        <FontAwesome5 name="wallet" size={18} color="green" />
         <Text style={styles.label}>Opening Balance</Text>
         <Text style={styles.value}>{item.OpeningBalance}</Text>
       </View>
       <View style={styles.separator} />
 
       <View style={styles.row}>
-        <FontAwesome5 name="money-check-alt" size={18} />
+        <FontAwesome5 name="money-check-alt" size={18} color="red" />
         <Text style={styles.label}>Closing Balance</Text>
         <Text style={styles.value}>{item.ClosingBalance}</Text>
       </View>
@@ -181,15 +176,15 @@ export default function TransactionReportScreen() {
           animationType="fade"
           onRequestClose={handleErrorModalOk}
         >
-          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-            <View className="bg-white p-6 rounded-xl w-4/5 items-center">
-              <Text className="text-xl font-bold mb-4">Alert</Text>
-              <Text className="text-gray-800 text-center mb-6">{errorMessage}</Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Alert</Text>
+              <Text style={styles.modalMessage}>{errorMessage}</Text>
               <TouchableOpacity
-                className="bg-blue-500 py-3 px-12 rounded-full"
+                style={styles.modalButton}
                 onPress={handleErrorModalOk}
               >
-                <Text className="text-white font-bold text-lg">OK</Text>
+                <Text style={styles.modalButtonText}>OK</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -264,12 +259,12 @@ const styles = StyleSheet.create({
   label: {
     flex: 1,
     marginLeft: 8,
-    color: "#444",
+    color: "blue",
     fontSize: moderateScale(14),
   },
   value: {
     fontWeight: "bold",
-    color: "#000",
+    color: "purple",
     fontSize: moderateScale(14),
   },
   separator: {
@@ -282,4 +277,40 @@ const styles = StyleSheet.create({
     width: "60%",
     alignItems: "flex-end",
    },
+   modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },    
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center'
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16
+  },
+  modalMessage: {
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 24
+  },
+  modalButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 25
+  },  
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18
+  }   
+
+
 });

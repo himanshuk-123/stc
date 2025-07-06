@@ -11,13 +11,13 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import Constants from 'expo-constants';
+//import Constants from 'expo-constants';
 import ReportService from '../services/reportService';
 import GradientLayout from '../component/GradientLayout';
 import Header from '../component/Header';
 import { useNavigation } from '@react-navigation/native';
 import { logout } from '../utils/authUtils';
-import { moderateScale } from '../utils/responsive';
+import { horizontalScale, verticalScale, moderateScale } from '../utils/responsive';
 const ComplainListScreen = () => {
   const dispatch = useDispatch();
   const userData = useSelector((state) => state.user);
@@ -35,7 +35,7 @@ const ComplainListScreen = () => {
       Tokenid: userData.tokenid,
       PageIndex: 1,
       PageSize: 20,
-      Version: Constants?.expoConfig?.version?.split('.')[0] || '1',
+      Version: '1',
       Location: null,
     };
 
@@ -85,29 +85,36 @@ const ComplainListScreen = () => {
         <Text style={styles.txnId}>TXN ID: {item.TransactionID}</Text>
         <Text style={styles.amount}>₹{item.Amount}</Text>
       </View>
-  
+      <View style={styles.headerRow}>
       <Text style={styles.label}>📅 Date:</Text>
       <Text style={styles.value}>{new Date(item.Date).toLocaleString()}</Text>
-  
+      </View>
+      <View style={styles.headerRow}>
       <Text style={styles.label}>📱 Mobile No:</Text>
       <Text style={styles.value}>{item.MobileNo}</Text>
-  
+      </View>
+      <View style={styles.headerRow}>
       <Text style={styles.label}>📦 Status:</Text>
       <Text style={[styles.status, item.Status === 'Success' ? styles.success : styles.failed]}>
         {item.Status}
       </Text>
-  
+      </View>
+      <View style={styles.headerRow}>
       <Text style={styles.label}>🆔 Complain ID:</Text>
       <Text style={styles.value}>{item.ComplainID}</Text>
-  
+      </View>
+      <View style={styles.headerRow}>
       <Text style={styles.label}>📝 Complain Status:</Text>
       <Text style={styles.value}>{item.ComplainStatus}</Text>
-  
+      </View>
+      <View style={styles.headerRow}>
       <Text style={styles.label}>🗣️ User Remark:</Text>
       <Text style={styles.value}>{item.Remark || 'N/A'}</Text>
-  
+      </View>
+      <View style={styles.headerRow}>
       <Text style={styles.label}>📩 Admin Message:</Text>
       <Text style={styles.value}>{item.Massage || 'N/A'}</Text>
+      </View>
     </View>
   );
   
@@ -133,15 +140,15 @@ const ComplainListScreen = () => {
           animationType="fade"
           onRequestClose={handleErrorModalOk}
         >
-          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-            <View className="bg-white p-6 rounded-xl w-4/5 items-center">
-              <Text className="text-xl font-bold mb-4">Alert</Text>
-              <Text className="text-gray-800 text-center mb-6">{errorMessage}</Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Alert</Text>
+              <Text style={styles.modalText}>{errorMessage}</Text>
               <TouchableOpacity
-                className="bg-blue-500 py-3 px-12 rounded-full"
+                style={styles.modalButton}
                 onPress={handleErrorModalOk}
               >
-                <Text className="text-white font-bold text-lg">OK</Text>
+                <Text style={styles.modalButtonText}>OK</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -228,18 +235,19 @@ const styles = StyleSheet.create({
     color: '#4caf50',
   },
   label: {
-    fontSize: 14,
+    fontSize: moderateScale(15),
     fontWeight: '600',
-    color: '#666',
+    color: 'blue',
     marginTop: 6,
   },
   value: {
-    fontSize: 14,
-    color: '#222',
+    fontSize: moderateScale(15),
+    color: 'purple',
     marginBottom: 4,
+    flexShrink: 1,
   },
   status: {
-    fontSize: 14,
+    fontSize: moderateScale(15),
     fontWeight: 'bold',
     marginBottom: 4,
   },
@@ -248,5 +256,67 @@ const styles = StyleSheet.create({
   },
   failed: {
     color: '#d32f2f',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center'
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16
+  },
+  modalText: {
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 24
+  },
+  modalButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 9999
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  balanceModalContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center'
+  },
+  modalLogo: {
+    width: verticalScale(100),
+    height: verticalScale(100),
+    marginBottom: verticalScale(16)
+  },balanceModalButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 9999,
+    marginTop: 16
+  },
+  balanceModalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18
   },
 });

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, FlatList, ActivityIndicator, Text, Modal, TouchableOpacity } from 'react-native';
+import { View, SafeAreaView, FlatList, ActivityIndicator, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import Header from '../component/Header';
-import SearchBar from '../component/SearchBar';
 import Cards from '../component/cards';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RechargeApiServices from '../services/RechargeService';
-import Constants from 'expo-constants';
+//import Constants from 'expo-constants';
 import GradientLayout from '../component/GradientLayout';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
@@ -32,7 +31,7 @@ const DTHRechargeScreen = () => {
         const payload = {
           Tokenid: token,
           mode: mode,
-          Version: Constants?.expoConfig?.version?.split('.')[0] || '1',
+          Version: '1',
           Location: null,
         };
 
@@ -115,15 +114,15 @@ const DTHRechargeScreen = () => {
           animationType="fade"
           onRequestClose={handleErrorModalOk}
         >
-          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-            <View className="bg-white p-6 rounded-xl w-4/5 items-center">
-              <Text className="text-xl font-bold mb-4">Alert</Text>
-              <Text className="text-gray-800 text-center mb-6">{errorMessage}</Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Alert</Text>
+              <Text style={styles.modalMessage}>{errorMessage}</Text>
               <TouchableOpacity
-                className="bg-blue-500 py-3 px-12 rounded-full"
+                style={styles.modalButton}
                 onPress={handleErrorModalOk}
               >
-                <Text className="text-white font-bold text-lg">OK</Text>
+                <Text style={styles.buttonText}>OK</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -144,13 +143,60 @@ const DTHRechargeScreen = () => {
             }}
           />
         ) : (
-          <View className="flex-1 justify-center items-center mt-10">
-            <Text className="text-lg text-gray-600">No DTH services available</Text>
+          <View style={styles.noServicesContainer}>
+            <Text style={styles.noServicesText}>No DTH services available</Text>
           </View>
         )}
       </SafeAreaView>
     </GradientLayout>
   );
 };
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center'
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16
+  },
+  modalMessage: {
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 24
+  },
+  modalButton: {
+    backgroundColor: '#3B82F6',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 9999
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18
+  },
+  noServicesContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 40
+  },
+  noServicesText: {
+    fontSize: 18,
+    color: '#666'
+  }
+});
 
 export default DTHRechargeScreen;

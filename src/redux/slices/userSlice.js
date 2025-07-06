@@ -62,7 +62,19 @@ export const clearUserData = createAsyncThunk(
   'user/clearData',
   async (_, { rejectWithValue }) => {
     try {
-      await AsyncStorage.clear();
+      // Remove only specific keys — exclude 'savedLogin'
+      const keysToRemove = [
+        'closingbalance',
+        'email',
+        'mobilenumber',
+        'shopname',
+        'standingbalance',
+        'tokenid',
+        'username',
+        'usertype',
+      ];
+
+      await AsyncStorage.multiRemove(keysToRemove);
       return true;
     } catch (error) {
       console.error('Error clearing user data:', error);
@@ -70,6 +82,7 @@ export const clearUserData = createAsyncThunk(
     }
   }
 );
+
 
 // Initial state matches the structure from Context
 const initialState = {

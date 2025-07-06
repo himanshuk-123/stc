@@ -3,14 +3,13 @@ import React from 'react';
 import Header from '../component/Header';
 import Cards from '../component/cards';
 import mobile_recharge from '../../assets/mobile_recharge.png';
+import dth_recharge from '../../assets/dth_Recharge.webp';
 import GradientLayout from '../component/GradientLayout';
 import { horizontalScale, verticalScale } from '../utils/responsive';
 
 const DATA = [
   { id: '1', title: 'Mobile Recharge', image: mobile_recharge, navigateTo:'MobileRecharge' },
-  { id: '2', title: 'DTH Recharge', image: mobile_recharge, navigateTo:'DTHRecharge'},
-  { id: '3', title: 'Metro Card', image: mobile_recharge },
-  { id: '4', title: 'FASTag', image: mobile_recharge },
+  { id: '2', title: 'DTH Recharge', image: dth_recharge, navigateTo:'DTHRecharge'}
 ];
 
 const RechargeScreen = () => {

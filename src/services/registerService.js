@@ -6,12 +6,12 @@ const RegisterService = {
             MobileNo,EmailID,State,Pincode,Name,Address,MobileOTP,MailOTP,Version,Location
         }),
         registeration: (ID,MobileNo,EmailID,State,Pincode,Name,Address,MobileOTP,MailOTP,Version,Location) =>
-        api.post('/RegistrationCall1',{
+        api.post('/Registration',{
             ID,MobileNo,EmailID,State,Pincode,Name,Address,MobileOTP,MailOTP,Version,Location
         }),
-        AddMember: (ID,MobileNo,EmailID,State,Pincode,Name,Address,MobileOTP,MailOTP,Version,Location) =>
+        AddMember: (Tokenid,MobileNo,EmailID,Password,ShopName,Name,Type,Version) =>
         api.post('/AddMember',{
-            ID,MobileNo,EmailID,State,Pincode,Name,Address,MobileOTP,MailOTP,Version,Location
+           Tokenid,MobileNo,EmailID,Password,ShopName,Name,Type,Version
         })
 }
 

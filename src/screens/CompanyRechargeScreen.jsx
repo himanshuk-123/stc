@@ -1,32 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { View, Text, SafeAreaView, TextInput, Image, ScrollView, Alert, ActivityIndicator, FlatList, TouchableOpacity, Platform, Modal, StyleSheet } from 'react-native';
+import { View, Text, Link, SafeAreaView, TextInput, Image, ScrollView, Alert, ActivityIndicator, FlatList, TouchableOpacity, Platform, Modal, StyleSheet, PermissionsAndroid } from 'react-native';
 import Header from '../component/Header';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import GradientLayout from '../component/GradientLayout';
 import CustomButton from '../component/button';
 import RechargeService from '../services/RechargeService';
-import Constants from 'expo-constants';
-import * as Contacts from 'expo-contacts';
-import * as Linking from 'expo-linking';
+import Contacts from 'react-native-contacts';
 import { useNavigation } from '@react-navigation/native';
 import { PlanService } from '../services/PlanService';
+import Constants from 'expo-constants';
+import * as Linking from 'expo-linking';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { handleRecharge as rechargeApiCall } from '../component/Commonfunction';
+import { selectContactPhone } from 'react-native-contact-picker';
 const CompanyRechargeScreen = ({ route }) => {
-    const { operator, mode, opcodenew, number } = route.params;
-    const [MobileNo, setMobileNo] = useState('');
-    const [Amount, setAmount] = useState('');
-    const [Pin, setPin] = useState('');
-    const [CircleId, setCircleId] = useState('');
-    const [MediumId, setMediumId] = useState('');
-    const [CircleCode, setCircleCode] = useState('');
-    const [AccountNo, setAccountNo] = useState('');
+    const { operator, mode, opcodenew, number, price } = route.params;
+    const [MobileNo, setMobileNo] = useState(operator.MobileNO? operator.MobileNO : number || '');
+    const [Amount, setAmount] = useState(price || '');
+    // const [Pin, setPin] = useState('');
+    // const [CircleId, setCircleId] = useState('');
+    // const [MediumId, setMediumId] = useState('');
+    // const [CircleCode, setCircleCode] = useState('');
+    // const [AccountNo, setAccountNo] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [rechargeData, setRechargeData] = useState(null);
-    const [showRechargeSuccess, setShowRechargeSuccess] = useState(false);
-    const [showRechargeError, setShowRechargeError] = useState(false);
+    // const [rechargeData, setRechargeData] = useState(null);
+    // const [showRechargeSuccess, setShowRechargeSuccess] = useState(false);
+    // const [showRechargeError, setShowRechargeError] = useState(false);
     const [contacts, setContacts] = useState([]);
-    const [selectedNumber, setSelectedNumber] = useState(null);
+    // const [selectedNumber, setSelectedNumber] = useState(null);
     const [showContactList, setShowContactList] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [customerInfo, setCustomerInfo] = useState(false);
@@ -37,39 +40,84 @@ const CompanyRechargeScreen = ({ route }) => {
             District: "",
         }
     });
+    // const [isPinEnabled, setIsPinEnabled] = useState(false);
     const navigation = useNavigation();
     // Use Redux selector instead of Context
     const userData = useSelector(state => state.user);
 
-    // Function to handle contact selection
+    const handleOpenContacts = async () => {
+        if (Platform.OS === 'android') {
+            const permission = PermissionsAndroid.PERMISSIONS.READ_CONTACTS;
+            const alreadyGranted = await PermissionsAndroid.check(permission);
+            if (alreadyGranted) {
+                console.log('Contacts permission already granted');
+            } else {
+                const requestResult = await PermissionsAndroid.request(permission);
+                if (requestResult === PermissionsAndroid.RESULTS.GRANTED) {
+                    console.log('Contacts permission granted after request');
+                } else {
+                    Alert.alert(
+                        'Permission Required',
+                        'Please allow contact access from settings to use this feature.'
+                    );
+                }
+            }
+        } else {
+            console.warn('This is Android-only code');
+        }
+    };
+
+    // const isValidUrl = (url) => url?.startsWith('http');
+
+    const imageToShow = operator?.image
+    ? operator.image
+    : `https://onlinerechargeservice.in/${operator.images.replace(/^~\//, '')}`
+
+
+    useEffect(() => {
+        console.log("operator", operator);
+        console.log("imageToShow", imageToShow);
+        console.log("operator Image", operator.images);
+    }, []);
+
     const openContacts = async () => {
         try {
-            const { status } = await Contacts.requestPermissionsAsync();
-            if (status === 'granted') {
-                const { data } = await Contacts.getContactsAsync({
-                    fields: [Contacts.Fields.PhoneNumbers],
-                });
-
-                const filtered = data.filter(
-                    c => c.phoneNumbers && c.phoneNumbers.length > 0
-                );
-
-                setContacts(filtered);
-                setShowContactList(true);  // Show contact list
-            } else {
-                Alert.alert('Permission Denied', 'Enable contacts permission.', [
-                    { text: 'OK' },
-                    { text: 'Open Settings', onPress: openSettings },
-                ]);
-            }
+            await handleOpenContacts();
+            const { data } = await Contacts.getAll();
+            const filtered = data.filter(
+                c => c.phoneNumbers && c.phoneNumbers.length > 0
+            );
+            setContacts(filtered);
+            setShowContactList(true);  // Show contact list
         } catch (error) {
             Alert.alert('Error', 'Could not access contacts.');
         }
     };
+    const pickContact = async () => {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_CONTACTS
+        );
+      
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert("Permission Denied", "Cannot open contacts without permission");
+          return;
+        }
+      
+        try {
+          const contact = await selectContactPhone();
+          if (contact) {
+            console.log("Selected Contact:", contact);
+            setMobileNo(contact.selectedPhone.number);
+            console.log("contact", contact);
+            setShowContactList(false);
+          }
+        } catch (err) {
+          console.log("Picker Error", err);
+          console.log("Picker Error:", JSON.stringify(err, null, 2));
 
-
-
-    // Function to open device settings (handle platform differences)
+          Alert.alert("Error", "Could not open contact picker.");
+        }
+      };
     const openSettings = () => {
         if (Platform.OS === 'ios') {
             Linking.openURL('app-settings:');
@@ -83,7 +131,6 @@ const CompanyRechargeScreen = ({ route }) => {
         console.log("customerInfo", customerInfo);
     }
 
-    // Function to process the selected contact and extract phone number
     const processSelectedContact = (contact) => {
         let mobileNumber = contact.phoneNumbers.find(
             p => p.label?.toLowerCase() === 'mobile'
@@ -104,9 +151,6 @@ const CompanyRechargeScreen = ({ route }) => {
         }
     };
 
-
-
-    // Function to sanitize phone number
     const sanitizePhoneNumber = (number) => {
         // Remove all non-digit characters
         let sanitized = number.replace(/\D/g, '');
@@ -124,7 +168,6 @@ const CompanyRechargeScreen = ({ route }) => {
         return sanitized;
     };
 
-    // Function to validate if it's a valid 10-digit Indian mobile number
     const validateIndianMobileNumber = (number) => {
         // Check if it's exactly 10 digits and starts with 6, 7, 8, or 9
         return /^[6789]\d{9}$/.test(number);
@@ -145,88 +188,37 @@ const CompanyRechargeScreen = ({ route }) => {
         setShowConfirmationModal(true);
     };
 
-    // const handleRecharge = async () => {
-    //     setShowConfirmationModal(false);
-    //     setLoading(true);
-    //     setError(null);
-    //     setRechargeData(null);
-    //     setShowRechargeSuccess(false);
-    //     setShowRechargeError(false);
-
-    //     const payload = {
-    //         Token: userData.tokenid,
-    //         UserID: null,
-    //         RefTxnId: null,
-    //         MobileNo: MobileNo,
-    //         Operator: opcodenew,
-    //         CricleId: "12",
-    //         Amount: Amount,
-    //         Pin: "0000",
-    //         CircleId: null,
-    //         MediumId: "1",
-    //         CircleCode: null,
-    //         AccountNo: null,
-    //         AccountOther: null,
-    //         Optional1: null,
-    //         Optional2: null,
-    //         Optional3: null,
-    //         Optional4: null,
-    //         Version: Constants?.expoConfig?.version?.split('.')[0] || '1',
-    //         Location: null,
-    //     }
-    //     console.log(payload);
-    //     try {
-    //         const response = await RechargeService.RechargeCall(
-    //             payload.Token,
-    //             payload.UserID,
-    //             payload.RefTxnId,
-    //             payload.MobileNo,
-    //             payload.Operator,
-    //             payload.CricleId,
-    //             payload.Amount,
-    //             payload.Pin,
-    //             payload.CircleId,
-    //             payload.MediumId,
-    //             payload.CircleCode,
-    //             payload.AccountNo,
-    //             payload.AccountOther,
-    //             payload.Optional1,
-    //             payload.Optional2,
-    //             payload.Optional3,
-    //             payload.Optional4,
-    //             payload.Version,
-    //             payload.Location,
-    //         )
-    //         console.log(response.data);
-    //         Alert.alert(response.data.MESSAGE);
-    //     } catch (error) {
-    //         console.error('Error during recharge:', error);
-    //         setError('An error occurred while processing the recharge. Please try again.');
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // }
-
-    const handleRecharge = () => {
-        console.log("Recharge");
-        navigation.replace('EnterPin', {
-            mobileNumber: MobileNo,
-            amount: Amount,
-            opcodenew: opcodenew,
-        });
-    }
-
-    useEffect(() => {
-        if (number) {
-            setMobileNo(number);
+    const handleRechargePress = async () => {
+        try {
+            setLoading(true);
+            const pinStatus = await AsyncStorage.getItem('isPinEnabled');
+            if (pinStatus === 'true') {
+                navigation.replace('EnterPin', {
+                     MobileNo,
+                     Amount,
+                     opcodenew: opcodenew?opcodenew:operator.OpTypeId,
+                });
+            } else {
+                await rechargeApiCall({ userData, MobileNo, opcodenew: opcodenew?opcodenew:operator.OpTypeId, Amount, navigation, setLoading, setError });
+            }
+        } catch (error) {
+            setLoading(false);
+            Alert.alert('Error', 'Something went wrong.');
         }
-    }, [number]);
+    };
 
+    const specialOffers = () => {
+        if (MobileNo) {
+            navigation.replace('SpecialOffers', { opcodenew: opcodenew?opcodenew:operator.OpTypeId, number: MobileNo, operator: operator, mode: mode });
+        } else {
+            Alert.alert('Please enter a valid mobile number');
+        }
+    }
     const handleCustomerInfo = async () => {
         try {
             const payload = {
                 Tokenid: userData.tokenid,
-                Operator: opcodenew,
+                Operator: opcodenew?opcodenew:operator.OpTypeId,
                 DTHNO: MobileNo,
                 Version: Constants?.expoConfig?.version?.split('.')[0] || '1',
                 Location: null
@@ -246,102 +238,79 @@ const CompanyRechargeScreen = ({ route }) => {
         }
     }
 
-
     return (
         <GradientLayout>
-            <SafeAreaView className="p-4 flex-1">
+            <SafeAreaView style={styles.safeArea}>
                 <Header headingTitle={mode === "1" ? "Mobile Recharge" : "DTH Recharge"} screenName={mode === "1" ? "MobileRechargeScreen" : "DTHRechargeScreen"} />
                 {
                     showContactList ? (
                         <Modal visible={showContactList} animationType="slide">
-                            <SafeAreaView className="flex-1 bg-white p-4">
-                                <Text className="text-xl font-bold mb-4">Select a Contact</Text>
+                            <SafeAreaView style={styles.modalContainer}>
+                                <Text style={styles.modalTitle}>Select a Contact</Text>
                                 <FlatList
                                     data={contacts}
                                     keyExtractor={(item) => item.id}
                                     renderItem={({ item }) => (
                                         <TouchableOpacity
-                                            className="p-3 border-b border-gray-300"
+                                            style={styles.contactItem}
                                             onPress={() => processSelectedContact(item)}
                                         >
-                                            <Text className="text-lg font-semibold">{item.name}</Text>
-                                            <Text className="text-gray-600">{item.phoneNumbers[0]?.number}</Text>
+                                            <Text style={styles.contactName}>{item.name}</Text>
+                                            <Text style={styles.contactNumber}>{item.phoneNumbers[0]?.number}</Text>
                                         </TouchableOpacity>
                                     )}
                                 />
                                 <TouchableOpacity
                                     onPress={() => setShowContactList(false)}
-                                    className="mt-4 p-3 bg-gray-200 rounded-full items-center"
+                                    style={styles.cancelButton}
                                 >
-                                    <Text className="text-red-600 font-bold">Cancel</Text>
+                                    <Text style={styles.cancelButtonText}>Cancel</Text>
                                 </TouchableOpacity>
                             </SafeAreaView>
                         </Modal>
-
                     ) :
-                        <ScrollView className="flex-1"
+                        <ScrollView style={styles.scrollView}
                             showsVerticalScrollIndicator={false}
                         >
-
-                            {/* Operator image and name */}
                             {customerInfo ? (
-  <View
-    style={{
-      backgroundColor: '#E6F4FF', // light blue background
-      padding: 16,
-      margin: 10,
-      borderRadius: 12,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      elevation: 5,
-    }}
-  >
-    <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#007AFF' }}>
-      Customer Info
-    </Text>
+                                <View
+                                    style={styles.customerInfoCard}
+                                >
+                                    <Text style={styles.customerInfoTitle}>
+                                        Customer Info
+                                    </Text>
 
-    <Text style={styles.infoText}>Name: {customerInfoData?.DATA?.Name || 'N/A'}</Text>
-    <Text style={styles.infoText}>Balance: ₹{customerInfoData?.DATA?.Balance || 'N/A'}</Text>
-    <Text style={styles.infoText}>District: {customerInfoData?.DATA?.District || 'N/A'}</Text>
-    <Text style={styles.infoText}>Monthly: {customerInfoData?.DATA?.Monthly || 'N/A'}</Text>
+                                    <Text style={styles.infoText}>Name: {customerInfoData?.DATA?.Name || 'N/A'}</Text>
+                                    <Text style={styles.infoText}>Balance: ₹{customerInfoData?.DATA?.Balance || 'N/A'}</Text>
+                                    <Text style={styles.infoText}>District: {customerInfoData?.DATA?.District || 'N/A'}</Text>
+                                    <Text style={styles.infoText}>Monthly: {customerInfoData?.DATA?.Monthly || 'N/A'}</Text>
 
-    <TouchableOpacity
-      onPress={() => setCustomerInfo(false)}
-      style={{
-        marginTop: 16,
-        backgroundColor: '#007AFF',
-        paddingVertical: 8,
-        borderRadius: 8,
-        alignItems: 'center',
-      }}
-    >
-      <Text style={{ color: '#fff', fontWeight: 'bold' }}>Hide Info</Text>
-    </TouchableOpacity>
-  </View>
-) : (
-  <View className="items-center mb-2">
-    <Image
-      source={{ uri: operator.image }}
-      style={{ width: 100, height: 100, borderRadius: 50 }}
-      resizeMode="cover"
-    />
-    <Text className="text-lg font-bold mt-2">{operator.name}</Text>
-  </View>
-)}
+                                    <TouchableOpacity
+                                        onPress={() => setCustomerInfo(false)}
+                                        style={styles.hideInfoButton}
+                                    >
+                                        <Text style={styles.hideInfoButtonText}>Hide Info</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ) : (
+                                <View style={styles.operatorContainer}>
+                                    <Image
+                                        source={{ uri: imageToShow }}
+                                        style={{ width: 100, height: 100, borderRadius: 50 }}
+                                        resizeMode="cover"
+                                    />
+                                    <Text style={styles.operatorName}>{operator.name?operator.name:operator.Operator}</Text>
+                                </View>
+                            )}
 
-
-                            {/* Mobile Number Input */}
-                            <View className="bg-white rounded-full flex-row items-center px-6 mb-4 mt-5" style={{ height: 60 }}>
+                            <View style={styles.inputContainer}>
                                 <FontAwesome name="mobile-phone" size={36} color="#03a5fc" />
                                 <TextInput
                                     placeholder="Mobile Number"
-                                    className="flex-1 py-2 text-gray-700 pl-6 font-bold text-2xl"
+                                    style={styles.input}
                                     placeholderTextColor="#888"
                                     keyboardType="numeric"
                                     value={MobileNo}
-
                                     onChangeText={(text) => {
                                         // Ensure only digits and max 10 characters
                                         const formattedText = text.replace(/\D/g, '').substring(0, 10);
@@ -351,93 +320,112 @@ const CompanyRechargeScreen = ({ route }) => {
                                 />
                                 {
                                     mode === "1" ?
-                                        <TouchableOpacity onPress={openContacts}>
+                                        <TouchableOpacity onPress={pickContact}>
                                             <AntDesign name="contacts" size={32} color="#666" />
                                         </TouchableOpacity> : ""
                                 }
                             </View>
 
-                            {/* Amount Input */}
-                            <View className="bg-white rounded-full flex-row items-center px-6 mb-4" style={{ height: 60 }}>
+                            <View style={styles.inputContainer}>
                                 <FontAwesome name="rupee" size={36} color="#f72343" />
                                 <TextInput
                                     placeholder="Amount"
-                                    className="flex-1 py-2 text-gray-700 pl-6 font-bold text-2xl"
+                                    style={styles.input}
                                     placeholderTextColor="#888"
                                     keyboardType="numeric"
                                     value={Amount}
                                     onChangeText={setAmount}
                                 />
-                                <Image source={{ uri: operator.image }} style={{ width: 55, height: 35 }} resizeMode="contain" />
+                                <Image source={{ uri: imageToShow }} style={styles.operatorImage} resizeMode="contain" />
                             </View>
 
-                            {/* Action Buttons */}
                             {
-                                mode === "1" ?
-                                    <View className="flex-row justify-between mb-4">
-                                        <CustomButton width="48%"  title="Recharge" />
-                                        <CustomButton width="48%" title="Browse Plans" onPress={() => navigation.navigate('BrowsePlan')} />
-                                    </View>
-                                    :
+                                mode === "1" ? (
+                                    opcodenew == "1" || opcodenew == "18" ? (
+                                        // When operator is 1 or 18 — show both buttons side by side
+                                        <View style={styles.buttonContainer}>
+                                            <CustomButton
+                                                title="Special Offers"
+                                                width="48%"
+                                                onPress={specialOffers}
+                                            />
+                                            <CustomButton
+                                                title="Browse Plans"
+                                                width="48%"
+                                                onPress={() =>
+                                                    navigation.navigate('BrowsePlanStateSelection', {
+                                                        opcodenew: opcodenew?opcodenew:operator.OpTypeId,
+                                                        mode,
+                                                        operator,
+                                                        number: MobileNo
+                                                    })
+                                                }
+                                                disabled={loading}
+                                            />
+                                        </View>
+                                    ) : (
+                                        // For other operators — show only full-width Browse Plan button
+                                        <View style={{ marginBottom: 16 }}>
+                                            <CustomButton
+                                                title="Browse Plans"
+                                                width="100%"
+                                                onPress={() =>
+                                                    navigation.navigate('BrowsePlanStateSelection', {
+                                                        opcodenew: opcodenew?opcodenew:operator.OpTypeId,
+                                                        mode,
+                                                        operator,
+                                                        number: MobileNo
+                                                    })
+                                                }
+                                                disabled={loading}
+                                            />
+                                        </View>
+                                    )
+                                ) : (
+                                    // When mode is not 1 — show DTH buttons
                                     <View style={{ marginBottom: 16, gap: 10 }}>
-                                        <CustomButton title="Recharge" />
                                         <CustomButton title="Customer Info" onPress={handleCustomerInfo} />
                                         <CustomButton title="DTH Plan" />
                                         <CustomButton title="Refresh DTH Service" />
                                     </View>
+                                )
                             }
 
-                            {loading ? <CustomButton title="Proceeding..." disabled /> : <CustomButton title="Proceed" onPress={() => {
-                                showConfirmation();
-                            }} />}
 
-                            {/* Note */}
-                            <View className="mt-4">
-                                <Text className="text-gray-500 font-bold text-sm">
+                            {loading ? <CustomButton title="Proceeding..." disabled /> : <CustomButton title="Proceed" onPress={showConfirmation} />}
+
+                            <View style={styles.noteContainer}>
+                                <Text style={styles.noteText}>
                                     Note: Please verify {mode === "1" ? "recharge" : "DTH"} amount and benefits with your operator before proceeding. Plans have been shown basis latest available informatin and might not be accurate always. You can choose to DTH with any amount and benefit will be decided by your {mode === "1" ? "recharge" : "DTH"} operator.
                                 </Text>
-
                             </View>
                         </ScrollView>
                 }
 
-                {/* Confirmation Modal */}
                 <Modal
                     visible={showConfirmationModal}
                     transparent={false}
                     animationType="fade"
                     onRequestClose={() => setShowConfirmationModal(false)}
                 >
-                    <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-                        <View className="bg-white p-6 rounded-xl w-5/6 items-center">
-                            {/* Operator Image */}
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
                             <Image
-                                source={{ uri: operator?.image }}
+                                source={{ uri: imageToShow }}
                                 style={{ width: 80, height: 80, borderRadius: 40 }}
                                 resizeMode="cover"
                             />
 
-                            {/* Confirmation Details */}
-                            <Text className="text-xl font-bold mt-4">Recharge of {operator?.name}</Text>
-                            <Text className="font-bold text-lg underline text-blue-900">{MobileNo}</Text>
-                            <Text className="font-bold text-lg mb-4">₹{Amount}</Text>
-                            <Text className="text-gray-600 text-center mb-4">
+                            <Text style={styles.modalTitle}>Recharge of {operator?.name?operator.name:operator.Operator}</Text>
+                            <Text style={styles.modalNumber}>{MobileNo}</Text>
+                            <Text style={styles.modalAmount}>₹{Amount}</Text>
+                            <Text style={styles.modalNote}>
                                 Please recheck the number and amount again. Wrong recharge is not entertained in any circumstances.
                             </Text>
-                            <View className="flex-row justify-between w-full mt-2">
-                                <TouchableOpacity
-                                    className="bg-gray-300 py-3 px-6 rounded-full"
-                                    onPress={() => setShowConfirmationModal(false)}
-                                >
-                                    <Text className="font-bold text-gray-700">Cancel</Text>
-                                </TouchableOpacity>
+                            <View style={styles.modalButtonContainer}>
+                                <CustomButton title="Cancel" width='48%' onPress={() => setShowConfirmationModal(false)} />
 
-                                <TouchableOpacity
-                                    className="bg-green-500 py-3 px-6 rounded-full"
-                                    onPress={handleRecharge}
-                                >
-                                    <Text className="font-bold text-white">Continue</Text>
-                                </TouchableOpacity>
+                                <CustomButton title={loading ? 'Proceeding...' : 'Continue'} width='48%' onPress={handleRechargePress} />
                             </View>
                         </View>
                     </View>
@@ -450,9 +438,226 @@ const CompanyRechargeScreen = ({ route }) => {
 export default CompanyRechargeScreen;
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        padding: 16
+    },
+    modalContainer: {
+        flex: 1,
+        backgroundColor: 'white',
+        padding: 16
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 16
+    },
+    contactItem: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0'
+    },
+    contactName: {
+        fontSize: 18,
+        fontWeight: '600'
+    },
+    contactNumber: {
+        color: '#666'
+    },
+    cancelButton: {
+        marginTop: 16,
+        padding: 12,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 25,
+        alignItems: 'center'
+    },
+    cancelButtonText: {
+        color: '#dc2626',
+        fontWeight: 'bold'
+    },
+    scrollView: {
+        flex: 1
+    },
+    customerInfoCard: {
+        backgroundColor: '#E6F4FF',
+        padding: 16,
+        margin: 10,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    customerInfoTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        color: '#007AFF'
+    },
+    hideInfoButton: {
+        marginTop: 16,
+        backgroundColor: '#007AFF',
+        paddingVertical: 8,
+        borderRadius: 8,
+        alignItems: 'center'
+    },
+    hideInfoButtonText: {
+        color: '#fff',
+        fontWeight: 'bold'
+    },
+    operatorContainer: {
+        alignItems: 'center',
+        marginBottom: 8
+    },
+    operatorImage: {
+        width: 50,
+        height: 50,
+        borderRadius: 25
+    },
+    operatorName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 8
+    },
+    inputContainer: {
+        backgroundColor: 'white',
+        borderRadius: 999,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        marginBottom: 16,
+        marginTop: 20,
+        height: 60
+    },
+    input: {
+        flex: 1,
+        paddingVertical: 8,
+        paddingLeft: 24,
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#4a4a4a'
+    },
+    smallOperatorImage: {
+        width: 55,
+        height: 35
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 16
+    },
+    dthButtonContainer: {
+        marginBottom: 16,
+        gap: 10
+    },
+    noteContainer: {
+        marginTop: 16
+    },
+    noteText: {
+        color: '#666',
+        fontWeight: 'bold',
+        fontSize: 14
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)'
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        padding: 24,
+        borderRadius: 12,
+        width: '83%',
+        alignItems: 'center'
+    },
+    modalOperatorImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 40
+    },
+    modalNumber: {
+        fontWeight: 'bold',
+        fontSize: 18,
+        textDecorationLine: 'underline',
+        color: '#1e3a8a'
+    },
+    modalAmount: {
+        fontWeight: 'bold',
+        fontSize: 18,
+        marginBottom: 16
+    },
+    modalWarning: {
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 16
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginTop: 8
+    },
+    cancelModalButton: {
+        backgroundColor: '#d1d5db',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 25
+    },
+    cancelModalButtonText: {
+        fontWeight: 'bold',
+        color: '#4b5563'
+    },
+    continueButton: {
+        backgroundColor: '#22c55e',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 25
+    },
+    continueButtonText: {
+        fontWeight: 'bold',
+        color: 'white'
+    },
     infoText: {
         fontSize: 16,
         marginBottom: 6,
-        color: '#333',
+        color: '#333'
     },
+    modalContent: {
+        backgroundColor: 'white',
+        padding: 24,
+        borderRadius: 12,
+        width: '80%',
+        alignItems: 'center'
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 16
+    },
+    modalText: {
+        color: '#333',
+        textAlign: 'center',
+        marginBottom: 24
+    },
+    modalButton: {
+        backgroundColor: '#3b82f6',
+        paddingVertical: 12,
+        paddingHorizontal: 48,
+        borderRadius: 9999
+    },
+    modalButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 18
+    },
+    modalButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%'
+    },
+
+
 });

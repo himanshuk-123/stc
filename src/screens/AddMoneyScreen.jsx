@@ -1,51 +1,81 @@
-import { View, Text, SafeAreaView } from 'react-native'
+import { View, Text, SafeAreaView,StyleSheet,Alert } from 'react-native'
 import React from 'react'
 import Header from '../component/Header'
 import Cards from '../component/cards'
-import Upi_icon from '../../assets/UPI_icon.png'
+import Upi_icon from '../../assets/payUpi.png'
 import add_money from '../../assets/add_money.png'
 import GradientLayout from '../component/GradientLayout'
 import { horizontalScale, verticalScale } from '../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+import {MaterialIcons, MaterialCommunityIcons} from '@expo/vector-icons';
+
 const AddMoneyScreen = () => {
   const navigation = useNavigation();
   const cardHeight = verticalScale(120);
   const cardWidth = '48%';
+
   return (
     <GradientLayout>
-    <SafeAreaView className="px-4 pt-4">
+      <SafeAreaView style={styles.container}>
         <Header headingTitle="Add Money" />
-        <View >
         <View>
-        <Cards imageSource={Upi_icon} title="PayU" gradientColors={['#ffffff','#ffffff']} height={cardHeight} width={cardWidth} imgheight={verticalScale(70)} imgwidth={horizontalScale(70)}/>
-        <Cards 
-        imageSource={add_money} 
-        title="Scan & Pay" 
-        gradientColors={['#ffffff','#ffffff']}
-        height={cardHeight} 
-        width={cardWidth}
-        imgheight={verticalScale(70)} 
-        imgwidth={horizontalScale(70)}
-        onPress={() => navigation.navigate('QrScanner')}
-        />
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              height: verticalScale(140),
+              marginBottom: verticalScale(15)
+            }}
+          >
+            <Cards
+              imageSource={Upi_icon}
+              title="PayU"
+              gradientColors={['#ffffff', '#ffffff']}
+              height={cardHeight}
+              width={cardWidth}
+              imgheight={verticalScale(70)}
+              imgwidth={horizontalScale(70)} />
+            <Cards
+              showIcon={true}
+              icon={<MaterialIcons name="qr-code-scanner" size={40} color="navy" />}
+              title="Scan & Pay"
+              gradientColors={['#ffffff', '#ffffff']}
+              height={cardHeight}
+              width={cardWidth}
+              imgheight={verticalScale(70)}
+              imgwidth={horizontalScale(70)}
+              onPress={() => navigation.navigate('QrScanner')}
+            />
+          </View>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            height: verticalScale(140),
+            marginBottom: verticalScale(15)
+          }}>
+            <Cards
+              imageSource={add_money}
+              title="Wallet to Wallet"
+              gradientColors={['#ffffff', '#ffffff']}
+              height={cardHeight}
+              width={cardWidth}
+              imgheight={verticalScale(70)}
+              imgwidth={horizontalScale(70)}
+              onPress={() => navigation.navigate('WalletPayment',{scannedNumber:null})}
+            />
+          </View>
         </View>
-        <View>
-        <Cards 
-        imageSource={add_money} 
-        title="Scan & Pay" 
-        gradientColors={['#ffffff','#ffffff']}
-        height={cardHeight} 
-        width={cardWidth}
-        imgheight={verticalScale(70)} 
-        imgwidth={horizontalScale(70)}
-        onPress={() => navigation.navigate('QrScanner')}
-        />
-        </View>
-        </View>
-    </SafeAreaView>
+      </SafeAreaView>
     </GradientLayout>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  } 
+});
 
 export default AddMoneyScreen

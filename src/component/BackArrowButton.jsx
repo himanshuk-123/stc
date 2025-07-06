@@ -1,8 +1,8 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons'; // Arrow icon ke liye
+import {AntDesign}  from '@expo/vector-icons'; // Arrow icon ke liye
 
 const BackArrowButton = ({ toScreen = null }) => {
   const navigation = useNavigation();

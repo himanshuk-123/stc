@@ -1,16 +1,29 @@
-import { View, Text } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import React from 'react'
 import BackArrowButton from './BackArrowButton'
-import { moderateScale } from '../utils/responsive'
+import { moderateScale, horizontalScale, verticalScale } from '../utils/responsive'
 const Header = ({headingTitle, screenName = null}) => {
   return (
     <View>
-       <View className="flex-row items-center mb-4 ">
+       <View style={styles.container}>
           <BackArrowButton screenName={screenName} />
-          <Text className="text-2xl font-bold text-black pl-5" style={{ fontSize: moderateScale(20) }}>{headingTitle}</Text>
+          <Text  style={styles.headerTitle}>{headingTitle}</Text>
         </View>
     </View>
   )
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: verticalScale(20)
+  },
+  headerTitle: {
+    fontSize: moderateScale(20),
+    fontWeight: 'bold',
+    color: 'black',
+    paddingLeft: horizontalScale(10),
+  },
+});
 export default Header

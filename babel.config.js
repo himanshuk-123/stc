@@ -1,26 +1,11 @@
-// module.exports = function (api) {
-//     api.cache(true);
-//     return {
-//       presets: [
-//         ["babel-preset-expo", { jsxImportSource: "nativewind" }],
-//         "nativewind/babel",
-//       ],
-//       plugins: ['react-native-reanimated/plugin',
-//       ['module:react-native-dotenv', {
-//       moduleName: '@env',
-//       path: '.env',
-//       allowUndefined: false,
-//     }]],
-//     };
-//   };
-
 module.exports = function (api) {
-  api.cache(true);
-  return {
-    presets: [
-      ["babel-preset-expo", { jsxImportSource: "nativewind" }],
-      "nativewind/babel",
-    ],
-    plugins:['react-native-reanimated/plugin']
+    api.cache(true);
+    return {
+      presets: ['babel-preset-expo'],
+      plugins: [
+        'nativewind/babel',
+        'react-native-reanimated/plugin' // ❗️LAST plugin hona chahiye
+      ],
+    };
   };
-};
+  

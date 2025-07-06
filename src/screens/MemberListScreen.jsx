@@ -17,9 +17,10 @@ import GradientLayout from "../component/GradientLayout";
 import ReportService from "../services/reportService";
 import Constants from "expo-constants";
 import { useSelector, useDispatch } from 'react-redux';
-import { FontAwesome5, MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
+import {FontAwesome5,MaterialIcons,Entypo,Ionicons} from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { logout } from '../utils/authUtils';
+import { moderateScale, verticalScale } from '../utils/responsive';
 // Helper functions
 
 export default function MemberListScreen() {
@@ -114,8 +115,8 @@ export default function MemberListScreen() {
             <Text style={styles.text}>User ID: {item.Userid}</Text>
           </View>
           <View>
-            <TouchableOpacity className="bg-blue-500 py-3 px-12 rounded-full" onPress={() => navigation.navigate('WalletTopup', { userId: item.Userid,users: data })}>
-              <Text className="text-white font-bold text-lg">Wallet Topup</Text>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('WalletTopup', { userId: item.Userid,users: data })}>
+              <Text style={styles.buttonText}>Wallet Topup</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -146,15 +147,15 @@ export default function MemberListScreen() {
           animationType="fade"
           onRequestClose={handleErrorModalOk}
         >
-          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-            <View className="bg-white p-6 rounded-xl w-4/5 items-center">
-              <Text className="text-xl font-bold mb-4">Alert</Text>
-              <Text className="text-gray-800 text-center mb-6">{errorMessage}</Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Alert</Text>
+              <Text style={styles.modalMessage}>{errorMessage}</Text>
               <TouchableOpacity
-                className="bg-blue-500 py-3 px-12 rounded-full"
+                style={styles.modalButton}
                 onPress={handleErrorModalOk}
               >
-                <Text className="text-white font-bold text-lg">OK</Text>
+                <Text style={styles.modalButtonText}>OK</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -208,7 +209,53 @@ const styles = StyleSheet.create({
   },
   text: {
     marginLeft: 8,
-    fontSize: 14,
-    color: "#444",
+    fontSize: moderateScale(15),
+    color: "purple",
+  },
+  button: {
+    backgroundColor: '#3B82F6',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 9999,
+    marginHorizontal: verticalScale(10),
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  modalMessage: {
+    color: '#1F2937',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  modalButton: {
+    backgroundColor: '#3B82F6',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 9999,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
   },
 });

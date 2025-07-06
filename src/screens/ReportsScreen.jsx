@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, FlatList, Image, Dimensions, ActivityIndicator, ScrollView, RefreshControl } from 'react-native'
+import { View, Text, SafeAreaView, FlatList, Image, Dimensions, ActivityIndicator, ScrollView, RefreshControl, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import Header from '../component/Header'
 import CustomButton from '../component/button'
@@ -11,18 +11,22 @@ import { useDispatch, useSelector } from 'react-redux';
 import { horizontalScale, verticalScale, moderateScale } from '../utils/responsive';
 import { dashboardHome } from '../component/Commonfunction';
 import { saveUserData } from '../redux/slices/userSlice'
+import { useNavigation } from '@react-navigation/native';
 const services = [
     // { id: '1', name: 'Standing Report', image: require('../../assets/logo.png'),navigate:'StandingReportScreen' },
-    { id: '2', name: 'Complain List', image: require('../../assets/live_chat.png'),navigate:'ComplainList' },
-    { id: '3', name: 'All Transaction Report', image: require('../../assets/talk_to_us.png'),navigate:'TransactionReport'},
-    { id: '4', name: 'User Day Book', image: require('../../assets/logo.png'),navigate:'UserDayBook'},
-    { id: '5', name: 'Fund Request List', image: require('../../assets/logo.png'),navigate:'FundRequestList'},
-    { id: '6', name: 'Member List', image: require('../../assets/live_chat.png'),navigate:'MemberList' },
-    { id: '7', name: 'Reports List', image: require('../../assets/live_chat.png'),navigate:'ReportsList' },
+    { id: '8', name: 'Recharge Report', image: require('../../assets/mobile_recharge.png'),navigate:'RechargeReport' },
+    { id: '3', name: 'All Transaction Report', image: require('../../assets/transactionReport.png'),navigate:'TransactionReport'},
+    { id: '2', name: 'Complain List', image: require('../../assets/complainlist.png'),navigate:'ComplainList' },
+    { id: '4', name: 'User Day Book', image: require('../../assets/userDayBook.webp'),navigate:'UserDayBook'},
+    { id: '5', name: 'Fund Request List', image: require('../../assets/fundRequestList.png'),navigate:'FundRequestList'},
+    { id: '6', name: 'Member List', image: require('../../assets/memberList.png'),navigate:'MemberList' },
+    { id: '7', name: 'Reports List', image: require('../../assets/reports_icon.png'),navigate:'ReportsList' },
+    { id: '7', name: 'Standing Report', image: require('../../assets/loan.webp'),navigate:'StandingReport' },
 ]
 
 const ReportsScreen = () => {
     const userData = useSelector(state => state.user);
+    const navigation = useNavigation();
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -30,6 +34,9 @@ const ReportsScreen = () => {
     const cardWidth = "90%"; // For 3 cards per row
     const cardHeight = verticalScale(80);
 
+    const filteredServices = services.filter(item =>
+        item.name === 'Member List' ? userData.usertype === 'Distributer' : true
+      );
     const renderItem = ({ item }) => (
         <View style={{
             width: '33%',
@@ -76,11 +83,10 @@ const ReportsScreen = () => {
                         flex: 1,
                         paddingHorizontal: horizontalScale(16),
                         paddingTop: verticalScale(16),
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
 
             }}>
                 <Header headingTitle="Balance & Reports" />
+                <View style={{flex:1, justifyContent:'space-between',alignItems:'center'}}>
                 <View>
                 <View style={{
                     justifyContent: 'center',
@@ -98,7 +104,7 @@ const ReportsScreen = () => {
                         color: 'black',
                         fontWeight: 'bold',
                         paddingLeft: horizontalScale(5)
-                    }}>₹ {userData.closingbalance}</Text>
+                    }}>₹ {userData.closingbalance ? parseFloat(userData.closingbalance) : '0.00'}</Text>
                 </View>
                 
                 <View style={{
@@ -115,7 +121,7 @@ const ReportsScreen = () => {
                 </View>
                 
                 <FlatList
-                    data={services}
+                    data={filteredServices}
                     keyExtractor={(item) => item.id}
                     renderItem={renderItem}
                     numColumns={3}
@@ -126,60 +132,6 @@ const ReportsScreen = () => {
                     }}
                 />
 </View>
-                <View style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-end',
-                    width: '100%',
-                    marginBottom: verticalScale(12)
-                }}>
-                    {/* Left Part: Live Chat & Talk to Us */}
-                    <View style={{
-                        flexDirection: 'row',
-                        width: '50%',
-                        height: '100%',
-                        justifyContent: 'space-around',
-                        alignItems: 'center'
-                    }}>
-                        <View style={{ alignItems: 'center' }}>
-                            <Image
-                                source={live_chat}
-                                style={{
-                                    width: horizontalScale(44),
-                                    height: verticalScale(44),
-                                    marginBottom: verticalScale(4)
-                                }}
-                            />
-                            <Text style={{ fontSize: moderateScale(12) }}>Live Chat</Text>
-                        </View>
-                        <View style={{ alignItems: 'center' }}>
-                            <Image
-                                source={talk_to_us}
-                                style={{
-                                    width: horizontalScale(44),
-                                    height: verticalScale(40),
-                                    marginBottom: verticalScale(4)
-                                }}
-                            />
-                            <Text style={{ fontSize: moderateScale(12) }}>Talk to Us</Text>
-                        </View>
-                    </View>
-
-                    {/* Logo */}
-                    <View style={{
-                        width: '50%',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
-                        <Image
-                            source={logo}
-                            style={{
-                                width: horizontalScale(90),
-                                height: verticalScale(40),
-                                resizeMode: 'contain'
-                            }}
-                        />
-                    </View>
                 </View>
             </SafeAreaView>
             </ScrollView>

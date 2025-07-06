@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, FlatList, Image, Button } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, FlatList, Image, Button, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import ReportService from '../services/reportService'
@@ -51,43 +51,44 @@ const ReportsListScreen = () => {
 
   const renderItem = ({item}) => {
     return (
-        <View className="bg-white rounded-2xl shadow-md p-4 mb-4 flex-row items-center">
-      <Image
-        source={{ uri: `https://onlinerechargeservice.in/${item.images.replace(/^~\//, '')}` }} // Replace with real URL
-        className="w-12 h-12 rounded-full mr-4"
-        resizeMode="contain"
-      />
-      <View className="flex-1">
-        <Text className="text-lg font-semibold text-gray-800">{item.Operator} - ₹{item.Amount}</Text>
-        <Text className="text-sm text-gray-600">Mobile: {item.MobileNO}</Text>
-        <Text className="text-sm text-gray-600">Name: {item.FullName}</Text>
-        <Text className="text-xs text-gray-400">{formatDate(item.Date)}</Text>
-      </View>
-      <View
-        className={`px-2 py-1 rounded-full ${
-          item.Status === 'Success'
-            ? 'bg-green-100'
-            : item.Status === 'Failed'
-            ? 'bg-red-100'
-            : 'bg-yellow-100'
-        }`}
-      >
-        <Text
-          className={`text-xs font-bold ${
-            item.Status === 'Success'
-              ? 'text-green-700'
-              : item.Status === 'Failed'
-              ? 'text-red-700'
-              : 'text-yellow-700'
-          }`}
-        >
-          {item.Status}
-        </Text>
-      </View>
-    </View>
+        <View style={styles.card}>
+          <Image
+            source={{ uri: `https://onlinerechargeservice.in/${item.images.replace(/^~\//, '')}` }}
+            style={styles.avatar}
+            resizeMode="contain"
+          />
+          <View style={styles.cardContent}>
+            <Text style={styles.title}>{item.Operator} - ₹{item.Amount}</Text>
+            <Text style={styles.subtitle}>Mobile: {item.MobileNO}</Text>
+            <Text style={styles.subtitle}>Name: {item.FullName}</Text>
+            <Text style={styles.date}>{formatDate(item.Date)}</Text>
+          </View>
+          <View style={[
+            styles.statusContainer,
+            item.Status === 'Success' ? styles.successBg :
+            item.Status === 'Failed' ? styles.failedBg :
+            styles.pendingBg
+          ]}>
+            <Text style={[
+              styles.statusText,
+              item.Status === 'Success' ? styles.successText :
+              item.Status === 'Failed' ? styles.failedText :
+              styles.pendingText
+            ]}>
+              {item.Status}
+            </Text>
+          </View>
+        </View>
     )
   }
 
+  if(loading){
+    return (
+      <GradientLayout>
+        <ActivityIndicator size="large" color="#0000ff" style={{flex:1,justifyContent:'center',alignItems:'center'}} />
+      </GradientLayout>
+    )
+  }
   return (
     <GradientLayout>
             <View style={styles.header}>
@@ -100,8 +101,7 @@ const ReportsListScreen = () => {
                 keyExtractor={(item, index) => item.id?.toString() || index.toString()}
                 contentContainerStyle={styles.content}
                 ListEmptyComponent={<Text>No data found</Text>}
-                
-/>
+            />
         </SafeAreaView>
     </GradientLayout>
   )
@@ -118,6 +118,71 @@ const styles = StyleSheet.create({
     },
     content: {
         margin: verticalScale(10)
+    },
+    card: {
+        backgroundColor: 'white',
+        borderRadius: 16,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+        padding: 16,
+        marginBottom: 16,
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    avatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        marginRight: 16
+    },
+    cardContent: {
+        flex: 1
+    },
+    title: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: 'blue'
+    },
+    subtitle: {
+        fontSize: 14,
+        color: 'purple'
+    },
+    date: {
+        fontSize: 12,
+        color: 'green'
+    },
+    statusContainer: {
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        borderRadius: 9999
+    },
+    statusText: {
+        fontSize: 12,
+        fontWeight: 'bold'
+    },
+    successBg: {
+        backgroundColor: '#dcfce7'
+    },
+    failedBg: {
+        backgroundColor: '#fee2e2'
+    },
+    pendingBg: {
+        backgroundColor: '#fef3c7'
+    },
+    successText: {
+        color: '#15803d'
+    },
+    failedText: {
+        color: '#b91c1c'
+    },
+    pendingText: {
+        color: '#b45309'
     }
 })
 

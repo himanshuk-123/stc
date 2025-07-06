@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet } from 'react-native'
 import React from 'react'
 import Header from '../component/Header'
 import GradientLayout from '../component/GradientLayout'
@@ -6,14 +6,31 @@ import GradientLayout from '../component/GradientLayout'
 const NotificationScreen = () => {
   return (
     <GradientLayout>
-    <SafeAreaView className="flex-1 px-4 ">
-        <View className="flex-row justify-between items-center m-2">
+    <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
         <Header headingTitle="Notifications"/>
-        <Text className="text-lg font-bold text-black ">Clear All</Text>
+        <Text style={styles.clearAllText}>Clear All</Text>
         </View>
     </SafeAreaView>
     </GradientLayout>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    margin: 16,
+  },
+  clearAllText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+});
 
 export default NotificationScreen

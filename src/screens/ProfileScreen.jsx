@@ -1,108 +1,228 @@
-import { View, Text, SafeAreaView, FlatList, Alert, ScrollView } from 'react-native'
-import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import Header from '../component/Header'
-import { Image } from 'react-native'
-import Cards from '../component/cards'
-import GradientLayout from '../component/GradientLayout'
-import { useNavigation } from '@react-navigation/native'
-import { logout } from '../utils/authUtils'
-import { horizontalScale, verticalScale, moderateScale } from '../utils/responsive';
-import GeneratQrCode from '../component/GeneratQrCode';
-const features = [
-    // { id: '1', name: 'Update Your KYC', image: require('../../assets/logo.png') },
-    // { id: '2', name: 'Manage Your Account', image: require('../../assets/logo.png') },
-    // { id: '3', name: 'Transaction History', image: require('../../assets/logo.png') },
-    // { id: '4', name: 'Settings', image: require('../../assets/logo.png') },
-    { id: '5', name: 'Help & Support', image: require('../../assets/logo.png'), navigate: 'Support' },
-    { id: '6', name: 'Logout', image: require('../../assets/logo.png'), navigate: 'Logout' },
-    // { id: '7', name: 'Update Your KYC', image: require('../../assets/logo.png') },
-    // { id: '8', name: 'Manage Your Account', image: require('../../assets/logo.png') },
-    // { id: '9', name: 'Transaction History', image: require('../../assets/logo.png') },
-    // { id: '10', name: 'Settings', image: require('../../assets/logo.png') },
-    { id: '12', name: 'Contact Us', image: require('../../assets/logo.png'), navigate: 'Contact' },
-]
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  FlatList,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Image
+} from 'react-native';
+import { useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import { AntDesign, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-const ProfileScreen = ({ route }) => {
-  const navigation = useNavigation();
-  // Redux hooks instead of Context
-  const userData = useSelector((state) => state.user);
-  const cardWidth = "93%"; // For 3 cards per row
-  const cardHeight = verticalScale(70);
-  const handleLogout = () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Logout",
-          onPress: () => logout(navigation)
-        }
-      ]
-    );
+import Header from '../component/Header';
+import Cards from '../component/cards';
+import GradientLayout from '../component/GradientLayout';
+import GeneratQrCode from '../component/GeneratQrCode';
+import { logout } from '../utils/authUtils';
+import { horizontalScale, verticalScale, moderateScale } from '../utils/responsive';
+
+const features = [
+  {
+    id: '5',
+    name: 'Help & Support',
+    showIcon: true,
+    icon: <MaterialIcons name="support-agent" size={30} color="navy" />,
+    navigate: 'Support'
+  },
+  {
+    id: '12',
+    name: 'Contact Us',
+    image: require('../../assets/contactUsimg.png'),
+    navigate: 'Contact'
+  },
+  {
+    id: '13',
+    name: 'Change Pin',
+    image: require('../../assets/changePin.png'),
+    navigate: 'ChangePin'
+  },
+  {
+    id: '14',
+    name: 'Change Password',
+    image: require('../../assets/changePass.png'),
+    navigate: 'ChangePassword'
+  },
+  {
+    id: '15',
+    name: 'Enable/Disable Pin',
+    image: require('../../assets/enabledisable.png'),
+    navigate: 'EnableDisablePin'
+  },  {
+    id: '6',
+    name: 'Logout',
+    showIcon: true,
+    icon: <MaterialCommunityIcons name="logout" size={30} color="navy" />,
+    navigate: 'Logout'
+  },
+  {
+    id: '90',
+    name: 'Add User',
+    image: require('../../assets/add_user.png'),
+    navigate: 'AddUser'
+  },
+  {
+    id: '91',
+    name: 'Home 2',
+    image: require('../../assets/home.png'), 
+    navigate: 'HomeScreen2'
   }
-  
-  const renderItem = ({item}) =>(
+];
+
+const ProfileScreen = () => {
+  const navigation = useNavigation();
+  const userData = useSelector((state) => state.user);
+  const [showqr, setShowqr] = useState(false);
+
+  const cardWidth = '93%';
+  const cardHeight = verticalScale(70);
+
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        onPress: () => logout(navigation)
+      }
+    ]);
+  };
+
+  const renderItem = ({ item }) => (
     <View style={{
-        width: '33%',
-        alignItems: 'center',
-        marginVertical: verticalScale(8)
-      }}>
-        <Cards
-            imageSource={item.image}
-            title={item.name}
-            height={cardHeight}
-            width={cardWidth}
-            imgheight={verticalScale(40)}
-            imgwidth={horizontalScale(40)}
-            gradientColors={['#ffffff', '#ffffff']}
-            style={{ fontSize: moderateScale(13) }}
-            navigateTo={item.navigate !== 'Logout' ? item.navigate : null}
-            onPress={item.navigate === 'Logout' ? handleLogout : () => navigation.navigate(item.navigate)}
-        />
+      width: '33%',
+      alignItems: 'center',
+      marginVertical: verticalScale(8)
+    }}>
+      <Cards
+        title={item.name}
+        icon={item.icon}
+        showIcon={item.showIcon}
+        imageSource={item.image}
+        height={cardHeight}
+        width={cardWidth}
+        imgheight={verticalScale(40)}
+        imgwidth={horizontalScale(40)}
+        gradientColors={['#ffffff', '#ffffff']}
+        style={{ fontSize: moderateScale(13) }}
+        onPress={
+          item.navigate === 'Logout'
+            ? handleLogout
+            : item.navigate
+              ? () => navigation.navigate(item.navigate)
+              : null
+        }
+      />
     </View>
-  )
+  );
+
   return (
     <GradientLayout>
-    <SafeAreaView style={{
+      <SafeAreaView style={{
         paddingHorizontal: horizontalScale(16),
         paddingTop: verticalScale(16)
       }}>
-        <ScrollView style={{marginBottom:verticalScale(10)}}>
-        <Header />
-        <View className="flex-row justify-center items-center ">
-            <View className="w-28 h-28 rounded-full overflow-hidden bg-white shadow-md flex-row justify-center items-center">
-                <Image
-                    source={require('../../assets/logo.png')}
-                    resizeMode="cover"
-                    style={{ width: '100%', height: '50%' }}
-                />
+        <ScrollView style={{ marginBottom: verticalScale(10) }}>
+          <Header />
+          <View style={styles.profileImageContainer}>
+            <View style={styles.imageWrapper}>
+              <Image
+                source={require('../../assets/logo.png')}
+                resizeMode="cover"
+                style={styles.profileImage}
+              />
             </View>
-        </View>
+          </View>
 
-        <View className="flex justify-center items-center mt-6">
-            <Text className="text-lg font-bold text-black" style={{ fontSize: moderateScale(17) }}>{userData.shopname}</Text>
-            <Text className=" font-bold text-black" style={{ fontSize: moderateScale(16) }}>{userData.email}</Text>
-        </View>
-        <View className="flex justify-center items-center mt-6">
-          <GeneratQrCode mobileNumber={userData.mobilenumber} />
-        </View>
-        <FlatList
+          <View style={styles.userInfoContainer}>
+            <Text style={styles.shopName}>{userData.shopname}</Text>
+            <Text style={styles.email}>{userData.email}</Text>
+          </View>
+
+          <View style={styles.qrToggleContainer}>
+            <TouchableOpacity onPress={() => setShowqr(!showqr)} style={styles.qrButton}>
+              <AntDesign name="qrcode" size={34} color="black" />
+              <Text style={styles.qrButtonText}>{showqr ? 'Hide QR Code' : 'Show QR Code'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {showqr && (
+            <View style={styles.qrCodeContainer}>
+              <GeneratQrCode mobileNumber={userData.mobilenumber} userName={userData.shopname} />
+            </View>
+          )}
+
+          <FlatList
             data={features}
-            keyExtractor={(item)=> item.id}
+            keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            numColumns={3}  
+            numColumns={3}
             showsVerticalScrollIndicator={false}
-             scrollEnabled={false}
-        />
+            scrollEnabled={false}
+          />
         </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
     </GradientLayout>
-  )
-}
+  );
+};
 
-export default ProfileScreen
+const styles = StyleSheet.create({
+  profileImageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  imageWrapper: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    overflow: 'hidden',
+    backgroundColor: 'white',
+    elevation: 5,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  profileImage: {
+    width: '100%',
+    height: '50%'
+  },
+  userInfoContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24
+  },
+  shopName: {
+    fontSize: moderateScale(17),
+    fontWeight: 'bold',
+    color: 'black'
+  },
+  email: {
+    fontSize: moderateScale(16),
+    fontWeight: 'bold',
+    color: 'black'
+  },
+  qrToggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: verticalScale(10)
+  },
+  qrButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: verticalScale(10)
+  },
+  qrButtonText: {
+    fontSize: moderateScale(16),
+    fontWeight: 'bold',
+    color: 'black'
+  },
+  qrCodeContainer: {
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
+});
+
+export default ProfileScreen;

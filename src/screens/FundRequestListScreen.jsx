@@ -17,6 +17,7 @@ import GradientLayout from "../component/GradientLayout";
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { logout } from '../utils/authUtils';
+import { horizontalScale, verticalScale } from '../utils/responsive';
 export default function FundRequestListScreen() {
   const [fundList, setFundList] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -121,15 +122,15 @@ export default function FundRequestListScreen() {
           animationType="fade"
           onRequestClose={handleErrorModalOk}
         >
-          <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-            <View className="bg-white p-6 rounded-xl w-4/5 items-center">
-              <Text className="text-xl font-bold mb-4">Alert</Text>
-              <Text className="text-gray-800 text-center mb-6">{errorMessage}</Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Alert</Text>
+              <Text style={styles.modalText}>{errorMessage}</Text>
               <TouchableOpacity
-                className="bg-blue-500 py-3 px-12 rounded-full"
+                style={styles.modalButton}
                 onPress={handleErrorModalOk}
               >
-                <Text className="text-white font-bold text-lg">OK</Text>
+                <Text style={styles.modalButtonText}>OK</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -173,16 +174,67 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: "600",
-    color: "#555",
+    color: "blue",
   },
   value: {
-    color: "#000",
+    color: "purple",
     flex: 1,
     textAlign: "right",
   },
   amount: {
     fontWeight: "bold",
-    color: "#000",
+    color: "green",
     marginLeft: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center'
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16
+  },
+  modalText: {
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 24
+  },
+  modalButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 9999
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  balanceModalContent: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center'
+  },
+  modalLogo: {
+    width: verticalScale(100),
+    height: verticalScale(100),
+    marginBottom: verticalScale(16)
   },
 });

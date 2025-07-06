@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, FlatList, SafeAreaView, Image, TouchableOpacity, Dimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons'; // For icons
+import {Ionicons} from '@expo/vector-icons'; // For icons
 import Cards from '../component/cards';
 import BackArrowButton from '../component/BackArrowButton';
 import Header from '../component/Header';
