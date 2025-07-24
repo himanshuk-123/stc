@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, TextInput, FlatList, SafeAreaView, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Cards from '../component/cards';
-import BackArrowButton from '../component/BackArrowButton';
 import Header from '../component/Header';
 import GradientLayout from '../component/GradientLayout';
 import CustomButton from '../component/button';

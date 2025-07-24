@@ -229,6 +229,7 @@ export default function RechargeReport() {
         }}>
           {item.Status}
         </Text>
+        
         <TouchableOpacity style={{
           backgroundColor: 'green',padding: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center'}}
           onPress={() =>navigation.navigate('CompanyRecharge',{operator: item, mode: '1' })}
@@ -241,12 +242,20 @@ export default function RechargeReport() {
           >
           <Text style={{color: 'white'}}>Print</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{
-          backgroundColor: 'red',padding: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center'}}
-          onPress={() => navigation.navigate('BookComplain', { operator: item})}
+        {item.Status === 'Success' && (
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'red',
+              padding: 8,
+              borderRadius: 8,
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}
+            onPress={() => navigation.navigate('BookComplain', { operator: item })}
           >
-          <Text style={{color: 'white'}}>Complain</Text>
-        </TouchableOpacity>
+            <Text style={{ color: 'white' }}>Complain</Text>
+          </TouchableOpacity>
+        )}
       </View>
         </View>
   );

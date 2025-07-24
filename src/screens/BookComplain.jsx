@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,24 +10,49 @@ import {
 } from 'react-native';
 import GradientLayout from '../component/GradientLayout';
 import Header from '../component/Header';
-
+import RechargeApiServices from '../services/RechargeService';
+import { useAppSelector } from '../redux/hooks';
+import { useNavigation } from '@react-navigation/native';
 const BookComplain = ({ route }) => {
   const [remark, setRemark] = useState('');
   const { operator } = route.params;
-
-  const handleSubmit = () => {
+  const userData = useAppSelector((state) => state.user);
+  const navigation = useNavigation();
+  const handleSubmit = async () => {
     if (remark.trim() === '') {
       Alert.alert('Error', 'Please enter a remark');
       return;
     }
 
-    console.log({
-      ...operator,
-      remark,
-    });
-
-    Alert.alert('Submitted', 'Complaint submitted successfully');
+    try {
+      const response = await RechargeApiServices.BookComplain(
+        userData.tokenid,
+         operator.RechargeID,
+          remark,
+          userData.version,
+          userData.location
+        );
+        console.log(response);
+      if (response.status === 200) {
+        Alert.alert('Success', 'Complaint submitted successfully', [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.goBack();
+            },
+          },
+        ]);
+      } else {
+        Alert.alert('Error', response.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
+
+  useEffect(() => {
+    console.log(operator);
+  }, [operator]);
 
   return (
     <GradientLayout>
@@ -79,7 +104,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     marginBottom: 4,
-    color: '#555',
+    color: 'black',
   },
   input: {
     borderWidth: 1,

@@ -9,10 +9,10 @@ import {
   Platform,
   StyleSheet,
   PermissionsAndroid
-} from "react-native"; 
- import React, { useState, useEffect } from 'react'
- import logo from "../../assets/logo.png";
- import phn from '../../assets/phone_icon.png'
+} from "react-native";
+import React, { useState, useEffect } from 'react'
+import logo from "../../assets/logo.png";
+import phn from '../../assets/phone_icon.png'
 import live_chat from "../../assets/live_chat.png";
 import talk_to_us from "../../assets/talk_to_us.png";
 import GradientLayout from "../component/GradientLayout";
@@ -29,12 +29,13 @@ import {
 } from "../utils/responsive";
 import { useIsFocused } from "@react-navigation/native";
 import { handleCallPress } from "../component/Commonfunction";
-  import { useNavigation } from '@react-navigation/native'
-  import eye from '../../assets/eye.png'
-  import eye_off from '../../assets/eyeOff.png'
-  import check from '../../assets/check.png'
-  const  LoginScreen = () => {
-      
+import { useNavigation } from '@react-navigation/native'
+import eye from '../../assets/eye.png'
+import eye_off from '../../assets/eyeOff.png'
+import check from '../../assets/check.png'
+import BottomSection from "../component/BottomSection";
+const LoginScreen = () => {
+
   const navigation = useNavigation();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -45,7 +46,7 @@ import { handleCallPress } from "../component/Commonfunction";
   const isFocused = useIsFocused();
   // Use Redux custom hooks
   const dispatch = useAppDispatch();
-  
+
   // Function to save credentials based on remember me choice
   const saveCredentials = async (phone, password, shouldRemember) => {
     try {
@@ -60,7 +61,7 @@ import { handleCallPress } from "../component/Commonfunction";
     }
   };
 
-  
+
   // Function to load saved credentials
   const loadCredentials = async () => {
     try {
@@ -68,7 +69,7 @@ import { handleCallPress } from "../component/Commonfunction";
       const saved = await AsyncStorage.getItem('savedLogin');
       console.log('saved', saved);
       if (saved) {
-          const { phone: savedPhone, password: savedPassword, rememberMe: savedRememberMe } = JSON.parse(saved);
+        const { phone: savedPhone, password: savedPassword, rememberMe: savedRememberMe } = JSON.parse(saved);
         setPhone(savedPhone);
         setPassword(savedPassword);
         setRememberMe(savedRememberMe);
@@ -180,7 +181,7 @@ import { handleCallPress } from "../component/Commonfunction";
         }
       }
 
-      const imei ="dummy-imei";
+      const imei = "dummy-imei";
       const fireToken = "dummy-token";
       const version = Platform.OS === "android" ? Platform.Version : "1";
 
@@ -203,10 +204,10 @@ import { handleCallPress } from "../component/Commonfunction";
         payload.FireToken,
         payload.Location
       );
-        // Save or remove credentials based on rememberMe setting
-        await saveCredentials(phone, password, rememberMe);
-        
-        // ✅ Continue same as your login success logic
+      // Save or remove credentials based on rememberMe setting
+      await saveCredentials(phone, password, rememberMe);
+
+      // ✅ Continue same as your login success logic
 
       console.log(response.data);
       const {
@@ -264,7 +265,7 @@ import { handleCallPress } from "../component/Commonfunction";
           <Text style={styles.loginText}>Login</Text>
 
           <View style={styles.inputContainer}>
-            <Image source={phn} style={{width:30,height:30}}/>
+            <Image source={phn} style={{ width: 30, height: 30 }} />
             <TextInput
               placeholder="Mobile Number or Email"
               placeholderTextColor="#888"
@@ -277,7 +278,7 @@ import { handleCallPress } from "../component/Commonfunction";
           </View>
 
           <View style={styles.inputContainer}>
-              <Text style={{fontSize:30}}>🔒</Text>
+            <Text style={{ fontSize: 30 }}>🔒</Text>
             <TextInput
               placeholder="Password"
               placeholderTextColor="#888"
@@ -287,27 +288,27 @@ import { handleCallPress } from "../component/Commonfunction";
               onChangeText={setPassword}
             />
             <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-              <Image source={secureText ? eye : eye_off} style={{width:30,height:30}}/>
+              <Image source={secureText ? eye : eye_off} style={{ width: 30, height: 30 }} />
             </TouchableOpacity>
           </View>
-          
-          {/* Remember Me checkbox positioned to the left */}
-    {/* ✅ Remember Me checkbox with label (fixed & accessible) */}
-<View style={styles.rememberMeContainer}>
-  <TouchableOpacity
-    style={[styles.checkbox, rememberMe && styles.checkedBox]}
-    onPress={() => setRememberMe(prev => !prev)}
-    accessibilityRole="checkbox"
-    accessibilityState={{ checked: rememberMe }}
-    accessibilityLabel="Remember login credentials"
-  >
-    {rememberMe && <Image source={check} style={{width:20,height:20}}/>}
-  </TouchableOpacity>
 
-  <TouchableOpacity onPress={() => setRememberMe(prev => !prev)}>
-    <Text style={styles.rememberMeText}>Remember Me</Text>
-  </TouchableOpacity>
-</View>
+          {/* Remember Me checkbox positioned to the left */}
+          {/* ✅ Remember Me checkbox with label (fixed & accessible) */}
+          <View style={styles.rememberMeContainer}>
+            <TouchableOpacity
+              style={[styles.checkbox, rememberMe && styles.checkedBox]}
+              onPress={() => setRememberMe(prev => !prev)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: rememberMe }}
+              accessibilityLabel="Remember login credentials"
+            >
+              {rememberMe && <Image source={check} style={{ width: 20, height: 20 }} />}
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setRememberMe(prev => !prev)}>
+              <Text style={styles.rememberMeText}>Remember Me</Text>
+            </TouchableOpacity>
+          </View>
 
 
           <CustomButton
@@ -330,31 +331,7 @@ import { handleCallPress } from "../component/Commonfunction";
         </View>
 
         {/* Bottom Icons */}
-        <View style={styles.bottomContainer}>
-          <View style={styles.leftIconsContainer}>
-            <View style={styles.iconContainer}>
-              <Image source={live_chat} style={styles.chatIcon} />
-              <Text style={styles.iconText}>Live Chat</Text>
-            </View>
-            <TouchableOpacity onPress={handleCallPress}>
-              <View style={{ alignItems: "center" }}>
-                <Image
-                  source={talk_to_us}
-                  style={{
-                    width: horizontalScale(44),
-                    height: verticalScale(40),
-                    marginBottom: verticalScale(4),
-                  }}
-                />
-                <Text style={{ fontSize: moderateScale(12) }}>Talk to Us</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.rightLogoContainer}>
-            <Image source={logo} style={styles.bottomLogo} />
-          </View>
-        </View>
+        <BottomSection />
       </SafeAreaView>
     </GradientLayout>
   );
@@ -440,7 +417,7 @@ const styles = StyleSheet.create({
   },
   iconText: {
     fontSize: 12,
-    color: 'black'  
+    color: 'black'
   },
   rightLogoContainer: {
     width: "50%",
@@ -477,5 +454,5 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 })
-  
-  export default LoginScreen
+
+export default LoginScreen

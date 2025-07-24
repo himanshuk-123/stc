@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     },
     headerText: {
         fontWeight: '600',
-        color: 'black',
+        color: '#fff',
     },
     emptyText: {
         textAlign: 'center',

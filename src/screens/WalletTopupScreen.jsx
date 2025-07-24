@@ -184,7 +184,7 @@ const WalletTopupScreen = ({ route }) => {
                 <View style={styles.radioOuter}>
                   {transactionType === 'TOPUP' && <View style={styles.radioInner} />}
                 </View>
-                <Text>Topup</Text>
+                <Text style={{color:'black'}}>Topup</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -194,7 +194,7 @@ const WalletTopupScreen = ({ route }) => {
                 <View style={styles.radioOuter}>
                   {transactionType === 'PULLOUT' && <View style={styles.radioInner} />}
                 </View>
-                <Text>Pullout</Text>
+                <Text style={{color:'black'}}>Pullout</Text>
               </TouchableOpacity>
             </View>
             <CustomButton
@@ -255,7 +255,8 @@ const styles = StyleSheet.create({
   transactionTypeText: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8
+    marginBottom: 8,
+    color:'black'
   },
   radioContainer: {
     flexDirection: 'row',

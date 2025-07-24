@@ -239,7 +239,7 @@ const HomeScreen = () => {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <View style={styles.walletContainer}>
                 <Image source={wallet} style={{height:20,width:20}}/>
-                <Text style={{ color: 'green', fontSize: 18, fontWeight: 'bold',paddingLeft:5 }}>₹ {userData.closingbalance ? parseFloat(userData.closingbalance) : '0.00'}</Text>
+                <Text style={{ color: '#00e676', fontSize: 18, fontWeight: 'bold',paddingLeft:5 }}>₹ {userData.closingbalance ? parseFloat(userData.closingbalance) : '0.00'}</Text>
               </View>
               <View style={[styles.walletContainer]}>
                 <Image source={wallet} style={{height:20,width:20}}/>
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 18,
     fontWeight: 'bold',
-    color: 'red'
+    color: '#ff5252'
   },
   carouselContainer: {
     marginBottom: verticalScale(10)

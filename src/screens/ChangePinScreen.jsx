@@ -24,6 +24,7 @@ import Header from '../component/Header';
 import { useSelector, useDispatch } from 'react-redux';
 import { horizontalScale, verticalScale } from '../utils/responsive';
 import { handleCallPress } from '../component/Commonfunction';
+import BottomSection from '../component/BottomSection';
 const ChangePasswordScreen = () => {
   const navigation = useNavigation();
   const [oldPin, setOldPin] = useState('');
@@ -151,7 +152,8 @@ const ChangePasswordScreen = () => {
           />
         </View>
 
-        <View style={styles.footer}>
+        <BottomSection/>
+        {/* <View style={styles.footer}>
           <View style={styles.footerLeft}>
             <View style={styles.footerItem}>
               <Image source={live_chat} style={styles.footerIcon} />
@@ -168,7 +170,7 @@ const ChangePasswordScreen = () => {
           <View style={styles.footerRight}>
             <Image source={logo} style={{ width: 90, height: 40 }} />
           </View>
-        </View>
+        </View> */}
         </View>
       </SafeAreaView>
     </GradientLayout>

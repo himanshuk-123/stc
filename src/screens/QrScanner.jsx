@@ -149,7 +149,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     marginBottom: 10,
-    color: 'black'
   },
   galleryIconButton: {
     backgroundColor: '#fff',

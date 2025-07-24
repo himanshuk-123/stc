@@ -18,6 +18,7 @@ import ApiService from '../services/authService';
 import CustomButton from '../component/button';
 import { useNavigation } from '@react-navigation/native';
 import { horizontalScale, moderateScale, verticalScale } from '../utils/responsive';
+import BottomSection from '../component/BottomSection';
 
 const ForgetPasswordScreen = () => {
   const [phone, setPhone] = useState('');
@@ -150,33 +151,7 @@ const ForgetPasswordScreen = () => {
         </View>
 
         {/* BOTTOM SECTION */}
-        <View style={styles.bottomSection}>
-          {/* Left: Live Chat + Talk to Us */}
-          <View style={styles.bottomLeftContainer}>
-            <View style={styles.iconContainer}>
-              <Image
-                source={live_chat}
-                style={[styles.icon, { width: horizontalScale(44), height: verticalScale(44) }]}
-              />
-              <Text style={styles.iconText}>Live Chat</Text>
-            </View>
-            <View style={styles.iconContainer}>
-              <Image
-                source={talk_to_us}
-                style={[styles.icon, { width: horizontalScale(44), height: verticalScale(40) }]}
-              />
-              <Text style={styles.iconText}>Talk to Us</Text>
-            </View>
-          </View>
-
-          {/* Right: Logo */}
-          <View style={styles.bottomRightContainer}>
-            <Image
-              source={logo}
-              style={styles.bottomLogo}
-            />
-          </View>
-        </View>
+        <BottomSection />
       </SafeAreaView>
     </GradientLayout>
   );

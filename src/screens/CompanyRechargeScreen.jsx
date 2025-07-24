@@ -8,12 +8,12 @@ import contact from '../../assets/contact.jpeg'
 import { useNavigation } from '@react-navigation/native';
 import { PlanService } from '../services/PlanService';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';   
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleRecharge as rechargeApiCall } from '../component/Commonfunction';
 import phone from '../../assets/phone_icon.png'
 const CompanyRechargeScreen = ({ route }) => {
     const { operator, mode, opcodenew, number, price } = route.params;
-    const [MobileNo, setMobileNo] = useState(operator.MobileNO? operator.MobileNO : number || '');
+    const [MobileNo, setMobileNo] = useState(operator.MobileNO ? operator.MobileNO : number || '');
     const [Amount, setAmount] = useState(price || '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -56,15 +56,14 @@ const CompanyRechargeScreen = ({ route }) => {
     // const isValidUrl = (url) => url?.startsWith('http');
 
     const imageToShow = operator?.image
-    ? operator.image
-    : `https://onlinerechargeservice.in/${operator.images.replace(/^~\//, '')}`
-
+        ? operator.image
+        : `https://onlinerechargeservice.in/${operator.images.replace(/^~\//, '')}`
 
     useEffect(() => {
-        console.log("operator", operator);
-        console.log("imageToShow", imageToShow);
-        console.log("operator Image", operator.images);
-    }, []);
+        if (price) {
+            setAmount(price.toString());
+        }
+    }, [price]);
 
     const openContacts = async () => {
         try {
@@ -83,12 +82,12 @@ const CompanyRechargeScreen = ({ route }) => {
     //     const granted = await PermissionsAndroid.request(
     //       PermissionsAndroid.PERMISSIONS.READ_CONTACTS
     //     );
-      
+
     //     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
     //       Alert.alert("Permission Denied", "Cannot open contacts without permission");
     //       return;
     //     }
-      
+
     //     try {
     //       const contact = await selectContactPhone();
     //       if (contact) {
@@ -180,12 +179,12 @@ const CompanyRechargeScreen = ({ route }) => {
             const pinStatus = await AsyncStorage.getItem('isPinEnabled');
             if (pinStatus === 'true') {
                 navigation.replace('EnterPin', {
-                     MobileNo,
-                     Amount,
-                     opcodenew: opcodenew?opcodenew:operator.OpTypeId,
+                    MobileNo,
+                    Amount,
+                    opcodenew: opcodenew ? opcodenew : operator.OpTypeId,
                 });
             } else {
-                await rechargeApiCall({ userData, MobileNo, opcodenew: opcodenew?opcodenew:operator.OpTypeId, Amount, navigation, setLoading, setError });
+                await rechargeApiCall({ userData, MobileNo, opcodenew: opcodenew ? opcodenew : operator.OpTypeId, Amount, navigation, setLoading, setError });
             }
         } catch (error) {
             setLoading(false);
@@ -195,7 +194,7 @@ const CompanyRechargeScreen = ({ route }) => {
 
     const specialOffers = () => {
         if (MobileNo) {
-            navigation.replace('SpecialOffers', { opcodenew: opcodenew?opcodenew:operator.OpTypeId, number: MobileNo, operator: operator, mode: mode });
+            navigation.replace('SpecialOffers', { opcodenew: opcodenew ? opcodenew : operator.OpTypeId, number: MobileNo, operator: operator, mode: mode });
         } else {
             Alert.alert('Please enter a valid mobile number');
         }
@@ -204,7 +203,7 @@ const CompanyRechargeScreen = ({ route }) => {
         try {
             const payload = {
                 Tokenid: userData.tokenid,
-                Operator: opcodenew?opcodenew:operator.OpTypeId,
+                Operator: opcodenew ? opcodenew : operator.OpTypeId,
                 DTHNO: MobileNo,
                 Version: '1',
                 Location: null
@@ -285,12 +284,12 @@ const CompanyRechargeScreen = ({ route }) => {
                                         style={{ width: 100, height: 100, borderRadius: 50 }}
                                         resizeMode="cover"
                                     />
-                                    <Text style={styles.operatorName}>{operator.name?operator.name:operator.Operator}</Text>
+                                    <Text style={styles.operatorName}>{operator.name ? operator.name : operator.Operator}</Text>
                                 </View>
                             )}
 
                             <View style={styles.inputContainer}>
-                                <Image source={phone} style={{height:30,width:30}}/>
+                                <Image source={phone} style={{ height: 30, width: 30 }} />
                                 <TextInput
                                     placeholder="Mobile Number"
                                     style={styles.input}
@@ -298,22 +297,24 @@ const CompanyRechargeScreen = ({ route }) => {
                                     keyboardType="numeric"
                                     value={MobileNo}
                                     onChangeText={(text) => {
-                                        // Ensure only digits and max 10 characters
                                         const formattedText = text.replace(/\D/g, '').substring(0, 10);
                                         setMobileNo(formattedText);
                                     }}
                                     maxLength={10}
+                                    textContentType="telephoneNumber"
+                                    importantForAutofill="yes"
                                 />
+
                                 {
                                     mode === "1" ?
                                         <TouchableOpacity >
-                                            <Image source={contact} style={{height:30,width:30}}/>
+                                            <Image source={contact} style={{ height: 30, width: 30 }} />
                                         </TouchableOpacity> : ""
                                 }
                             </View>
 
                             <View style={styles.inputContainer}>
-                                <Text style={{fontSize:38,color:'red'}}>₹</Text>
+                                <Text style={{ fontSize: 38, color: 'red' }}>₹</Text>
                                 <TextInput
                                     placeholder="Amount"
                                     style={styles.input}
@@ -321,7 +322,10 @@ const CompanyRechargeScreen = ({ route }) => {
                                     keyboardType="numeric"
                                     value={Amount}
                                     onChangeText={setAmount}
+                                    textContentType="none"
+                                    importantForAutofill="no"
                                 />
+
                                 <Image source={{ uri: imageToShow }} style={styles.operatorImage} resizeMode="contain" />
                             </View>
 
@@ -340,7 +344,7 @@ const CompanyRechargeScreen = ({ route }) => {
                                                 width="48%"
                                                 onPress={() =>
                                                     navigation.navigate('BrowsePlanStateSelection', {
-                                                        opcodenew: opcodenew?opcodenew:operator.OpTypeId,
+                                                        opcodenew: opcodenew ? opcodenew : operator.OpTypeId,
                                                         mode,
                                                         operator,
                                                         number: MobileNo
@@ -357,7 +361,7 @@ const CompanyRechargeScreen = ({ route }) => {
                                                 width="100%"
                                                 onPress={() =>
                                                     navigation.navigate('BrowsePlanStateSelection', {
-                                                        opcodenew: opcodenew?opcodenew:operator.OpTypeId,
+                                                        opcodenew: opcodenew ? opcodenew : operator.OpTypeId,
                                                         mode,
                                                         operator,
                                                         number: MobileNo
@@ -378,7 +382,7 @@ const CompanyRechargeScreen = ({ route }) => {
                             }
 
 
-                            {loading ? <CustomButton title="Proceeding..." disabled /> : <CustomButton title="Proceed" onPress={showConfirmation} />}
+                            <CustomButton title={loading ? "Proceeding..." : "Proceed"} onPress={showConfirmation} disabled={loading} />
 
                             <View style={styles.noteContainer}>
                                 <Text style={styles.noteText}>
@@ -402,16 +406,16 @@ const CompanyRechargeScreen = ({ route }) => {
                                 resizeMode="cover"
                             />
 
-                            <Text style={styles.modalTitle}>Recharge of {operator?.name?operator.name:operator.Operator}</Text>
+                            <Text style={styles.modalTitle}>Recharge of {operator?.name ? operator.name : operator.Operator}</Text>
                             <Text style={styles.modalNumber}>{MobileNo}</Text>
                             <Text style={styles.modalAmount}>₹{Amount}</Text>
                             <Text style={styles.modalNote}>
                                 Please recheck the number and amount again. Wrong recharge is not entertained in any circumstances.
                             </Text>
                             <View style={styles.modalButtonContainer}>
-                                <CustomButton title="Cancel" width='48%' onPress={() => setShowConfirmationModal(false)} />
+                                <CustomButton title="Cancel" width='48%' onPress={() => setShowConfirmationModal(false)} disabled={loading} />
 
-                                <CustomButton title={loading ? 'Proceeding...' : 'Continue'} width='48%' onPress={handleRechargePress} />
+                                <CustomButton title={loading ? 'Proceeding...' : 'Continue'} width='48%' onPress={handleRechargePress} disabled={loading} />
                             </View>
                         </View>
                     </View>
@@ -549,14 +553,16 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)'
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        color: 'black'
     },
     modalContent: {
         backgroundColor: 'white',
         padding: 24,
         borderRadius: 12,
         width: '83%',
-        alignItems: 'center'
+        alignItems: 'center',
+        color: 'black'
     },
     modalOperatorImage: {
         width: 80,
@@ -567,83 +573,104 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 18,
         textDecorationLine: 'underline',
-        color: '#1e3a8a'
+        color: '#1e3a8a',
+        color: 'black'
     },
     modalAmount: {
         fontWeight: 'bold',
         fontSize: 18,
-        marginBottom: 16
+        marginBottom: 16,
+        color: 'black'
     },
     modalWarning: {
         color: '#666',
         textAlign: 'center',
-        marginBottom: 16
+        marginBottom: 16,
+        color: 'black'
     },
     modalButtons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
-        marginTop: 8
+        marginTop: 8,
+        color: 'black'
     },
     cancelModalButton: {
         backgroundColor: '#d1d5db',
         paddingVertical: 12,
         paddingHorizontal: 24,
-        borderRadius: 25
+        borderRadius: 25,
+        color: 'black'
     },
     cancelModalButtonText: {
         fontWeight: 'bold',
-        color: '#4b5563'
+        color: '#4b5563',
+        color: 'black'
     },
     continueButton: {
         backgroundColor: '#22c55e',
         paddingVertical: 12,
         paddingHorizontal: 24,
-        borderRadius: 25
+        borderRadius: 25,
+        color: 'black'
     },
     continueButtonText: {
         fontWeight: 'bold',
-        color: 'white'
+        color: 'white',
+        color: 'black'
     },
     infoText: {
         fontSize: 16,
         marginBottom: 6,
-        color: '#333'
+        color: '#333',
+        color: 'black'
     },
     modalContent: {
         backgroundColor: 'white',
         padding: 24,
         borderRadius: 12,
         width: '80%',
-        alignItems: 'center'
+        alignItems: 'center',
+        color: 'black'
     },
     modalTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 16
+        marginBottom: 16,
+        color: 'black'
     },
     modalText: {
         color: '#333',
         textAlign: 'center',
-        marginBottom: 24
+        marginBottom: 24,
+        color: 'black'
     },
     modalButton: {
         backgroundColor: '#3b82f6',
         paddingVertical: 12,
         paddingHorizontal: 48,
-        borderRadius: 9999
+        borderRadius: 9999,
+        color: 'black'
     },
     modalButtonText: {
         color: 'white',
         fontWeight: 'bold',
-        fontSize: 18
+        fontSize: 18,
+        color: 'black'
     },
     modalButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        width: '100%'
+        width: '100%',
+        color: 'black',
     },
+    modalNote: {
+        color: '#5a5e5b',
+        marginBottom: 10,
+        fontSize: 12,
+        fontWeight: 'bold'
+    }
 
 
 });

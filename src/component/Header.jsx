@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import React from 'react'
 import BackArrowButton from './BackArrowButton'
 import { moderateScale, horizontalScale, verticalScale } from '../utils/responsive'
-const Header = ({headingTitle, screenName = null}) => {
+const Header = ({headingTitle, screenName = null}) => { 
   return (
     <View>
        <View style={styles.container}>
@@ -22,8 +22,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: moderateScale(20),
     fontWeight: 'bold',
-    color: 'black',
+    color: 'white',
     paddingLeft: horizontalScale(10),
   },
 });
+
+
 export default Header

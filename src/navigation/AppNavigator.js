@@ -42,6 +42,7 @@ import HomeScreen2 from '../screens/HomeScreen2';
 import ServicesScreen from '../screens/ServicesScreen';
 import BookComplain from '../screens/BookComplain';
 import PrintScreen from '../screens/PrintScreen';
+import MoreScreen from '../screens/MoreScreen';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -85,6 +86,7 @@ const AppNavigator = () => {
         <Stack.Screen name="Services" component={ServicesScreen} />
         <Stack.Screen name="BookComplain" component={BookComplain} />
         <Stack.Screen name="PrintScreen" component={PrintScreen} />
+        <Stack.Screen name="MoreScreen" component={MoreScreen} />
     </Stack.Navigator>
   );
 };

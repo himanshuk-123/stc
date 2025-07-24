@@ -49,7 +49,7 @@ const BrowsePlanStateSelection = ({route}) => {
         {states.map((state) => (
             <Picker.Item 
             key={state.CircleCode}
-            label={`${state.Name}`} 
+            label={`${state.Name} (${state.CircleCode})`} 
             value={state.CircleCode} 
              />
         ))}

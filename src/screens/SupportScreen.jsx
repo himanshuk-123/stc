@@ -59,7 +59,7 @@ const SupportScreen = () => {
                 <Header headingTitle={'Help & Support'} />
             
                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Support</Text>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold',color: 'white' }}>Support</Text>
                 </View>
                 {loading ? (
                     <View style={{ justifyContent: 'center', alignItems: 'center' }}>

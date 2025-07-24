@@ -24,6 +24,7 @@ import Header from '../component/Header';
 import { useSelector } from 'react-redux';
 import { horizontalScale, verticalScale } from '../utils/responsive';
 import { handleCallPress } from '../component/Commonfunction';
+import BottomSection from '../component/BottomSection';
 
 const ChangePasswordScreen = () => {
   const navigation = useNavigation();
@@ -140,7 +141,7 @@ const ChangePasswordScreen = () => {
         <CustomButton title={loading ? 'Loading...' : 'Change Password'} onPress={handleChangePassword} />
       </View>
 
-      <View style={styles.footer}>
+      {/* <View style={styles.footer}>
         <View style={styles.footerLeft}>
           <View style={styles.footerItem}>
             <Image source={live_chat} style={styles.footerIcon} />
@@ -156,7 +157,8 @@ const ChangePasswordScreen = () => {
         <View style={styles.footerRight}>
           <Image source={logo} style={{ width: 90, height: 40 }} />
         </View>
-        </View>
+        </View> */}
+        <BottomSection/>
       </View>
     </SafeAreaView>
     </GradientLayout>
