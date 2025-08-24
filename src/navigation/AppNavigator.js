@@ -43,6 +43,10 @@ import ServicesScreen from '../screens/ServicesScreen';
 import BookComplain from '../screens/BookComplain';
 import PrintScreen from '../screens/PrintScreen';
 import MoreScreen from '../screens/MoreScreen';
+import BillPaymentsScreen from '../screens/BillPaymentsScreen';
+import PaymentRequest from '../screens/PaymentRequest';
+import OperatorDetailsScreen from '../screens/OperatorDetailsScreen';
+import ProgressScreen from '../screens/ProgressScreen';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -82,11 +86,15 @@ const AppNavigator = () => {
       <Stack.Screen name="AddUser" component={AddUserScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="OtpVerify" component={OtpVerifyScreen} />
-        <Stack.Screen name="HomeScreen2" component={HomeScreen2} />
-        <Stack.Screen name="Services" component={ServicesScreen} />
-        <Stack.Screen name="BookComplain" component={BookComplain} />
-        <Stack.Screen name="PrintScreen" component={PrintScreen} />
-        <Stack.Screen name="MoreScreen" component={MoreScreen} />
+      <Stack.Screen name="HomeScreen2" component={HomeScreen2} />
+      <Stack.Screen name="Services" component={ServicesScreen} />
+      <Stack.Screen name="BookComplain" component={BookComplain} />
+      <Stack.Screen name="PrintScreen" component={PrintScreen} />
+      <Stack.Screen name="MoreScreen" component={MoreScreen} />
+      <Stack.Screen name="BillPayments" component={BillPaymentsScreen} />
+      <Stack.Screen name="PaymentRequest" component={PaymentRequest} />
+      <Stack.Screen name="OperatorDetails" component={OperatorDetailsScreen} />
+      <Stack.Screen name="ProgressScreen" component={ProgressScreen} />
     </Stack.Navigator>
   );
 };

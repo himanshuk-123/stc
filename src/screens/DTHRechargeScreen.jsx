@@ -88,7 +88,7 @@ const DTHRechargeScreen = () => {
           imgwidth={50}
           gradientColors={['#ffffff', '#ffffff']}
           style={{ fontSize: moderateScale(12) }}
-          onPress={() => navigation.navigate('CompanyRecharge', { operator: item, mode:mode, opcodenew:item.opcodenew })}
+          onPress={() => navigation.navigate('CompanyRecharge', { operator: item, mode:mode, opcodenew:item.opcodenew ,headingTitle:"DTH Recharge" ,screenName:"DTHRechargeScreen" })}
           cardsPerRow={3}
         />
       </View>

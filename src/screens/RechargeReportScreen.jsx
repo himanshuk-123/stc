@@ -170,8 +170,7 @@ export default function RechargeReport() {
       <View style={{
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12
+        alignItems: 'center'
       }}>
         <View>
         <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'blue', flexShrink: 1 }}>
@@ -208,6 +207,10 @@ export default function RechargeReport() {
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
         <Text>📱</Text>
         <Text style={{ marginLeft: 6, color: 'purple' }}>Recharge of {item.Operator} Mobile</Text>
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+        <Text>🔍</Text>
+        <Text style={{ marginLeft: 6, color: 'purple' }}>Operator ID: {item.OrignalOperatorId}</Text>
       </View>
       {/* Amount */}
       <View style={{

@@ -67,7 +67,7 @@ import {
     }, []);
   
     const handleCardPress = (item) => {
-        navigation.replace('CompanyRecharge',{operator: operator, mode: mode, opcodenew: opcodenew, price: item.price, number: number})
+        navigation.replace('CompanyRecharge',{operator: operator, mode: mode, opcodenew: opcodenew, price: item.price, number: number,headingTitle:"Mobile Recharge"})
     };
   
     const renderItem = ({ item }) => (

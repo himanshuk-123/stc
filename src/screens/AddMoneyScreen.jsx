@@ -8,6 +8,7 @@ import GradientLayout from '../component/GradientLayout'
 import { horizontalScale, verticalScale } from '../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
 import scanner from '../../assets/scanner.png'
+import paymentRequest from '../../assets/requestMoney.webp'
 const AddMoneyScreen = () => {
   const navigation = useNavigation();
   const cardHeight = verticalScale(120);
@@ -63,6 +64,16 @@ const AddMoneyScreen = () => {
               imgheight={verticalScale(70)}
               imgwidth={horizontalScale(70)}
               onPress={() => navigation.navigate('WalletPayment',{scannedNumber:null})}
+            />
+            <Cards
+              imageSource={paymentRequest}
+              title="Payment Request"
+              gradientColors={['#ffffff', '#ffffff']}
+              height={cardHeight}
+              width={cardWidth}
+              imgheight={verticalScale(70)}
+              imgwidth={horizontalScale(70)}
+              onPress={() => navigation.navigate('PaymentRequest')}
             />
           </View>
         </View>

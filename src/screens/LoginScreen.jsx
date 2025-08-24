@@ -13,8 +13,6 @@ import {
 import React, { useState, useEffect } from 'react'
 import logo from "../../assets/logo.png";
 import phn from '../../assets/phone_icon.png'
-import live_chat from "../../assets/live_chat.png";
-import talk_to_us from "../../assets/talk_to_us.png";
 import GradientLayout from "../component/GradientLayout";
 import Geolocation from "react-native-geolocation-service";
 import ApiService from "../services/authService";

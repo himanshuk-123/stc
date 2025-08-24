@@ -8,12 +8,15 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  Image,
 } from 'react-native';
 import Header from '../component/Header';
 import { verticalScale } from '../utils/responsive';
 import GradientLayout from '../component/GradientLayout';
 import { useNavigation } from '@react-navigation/native';
-
+import wifi from '../../assets/wifi.png'
+import phone from '../../assets/phone_icon.png'
+import sms from '../../assets/sms.png'
 const BrowsePlansScreen = ({ route }) => {
   const { opcodenew, stateId, mode, operator, number } = route.params;
   const [browsePlanData, setBrowsePlanData] = useState(null);
@@ -97,6 +100,7 @@ const BrowsePlansScreen = ({ route }) => {
           opcodenew,
           price: item.price,
           number,
+          headingTitle:"Mobile Recharge"
         });
       }}
     >
@@ -112,22 +116,63 @@ const BrowsePlansScreen = ({ route }) => {
       >
         <View style={styles.cardHeader}>
           <Text style={styles.validityText}>₹{item.price}</Text>
-          <Text style={styles.detailText}>
-            {item.data ? `📶 ${item.data}` : ''}
-            {item.data && item.calls ? ' | ' : ''}
-            {item.calls ? `📞 ${item.calls}` : ''}
-            {(item.calls || item.data) && item.sms ? ' | ' : ''}
-            {item.sms ? `✉️ ${item.sms}` : ''}
-          </Text>
-        </View>
-
-        <View>
           <Text style={{ fontSize: 12, color: 'black', fontWeight: 'bold' }}>({item.validityDays} days)</Text>
           <Text style={styles.perDay}>@ ₹{item.dailyCost}/D</Text>
-          <View style={{ marginTop: 5 }}>
-            <Text style={styles.benefitText}>{item.benefit}</Text>
-          </View>
         </View>
+
+        <View style={{ flex: 1, paddingLeft: 5, borderLeftWidth: 1, borderColor: '#ccc' }}>
+  <View
+    style={{
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'flex-start',
+      marginBottom: 10,
+      rowGap: 8, // vertical spacing
+      columnGap: 10, // horizontal spacing (acts like gap: 10 in web)
+    }}
+  >
+   {
+  [
+    { type: 'data', value: item.data, icon: wifi },
+    { type: 'calls', value: item.calls, icon: phone },
+    { type: 'sms', value: item.sms, icon: sms }
+  ]
+    .filter(i => i.value) // sirf available values render hongi
+    .map((i, index, arr) => {
+      const isFirst = index === 0;
+      const isLast = index === arr.length - 1;
+
+      return (
+        <View
+          key={i.type}
+          style={[
+            styles.detailBox,
+            // {
+            //   borderLeftWidth: isFirst ? 0 : 1,
+            //   borderRightWidth: isLast ? 0 : 1,
+            //   borderColor: 'purple',
+            // },
+          ]}
+        >
+          <Image source={i.icon} style={{ width: 20, height: 20, marginBottom: 5 }} />
+          <Text style={styles.detailItem}> {i.value}</Text>
+        </View>
+      );
+    })
+}
+
+
+  </View>
+
+  <View>
+    <Text style={styles.benefitText}>{item.benefit}</Text>
+  </View>
+</View>
+
+
+
+
+
       </View>
     </TouchableOpacity>
   );
@@ -226,16 +271,17 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(8),
   },
   tabItem: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     height: 36,
-    marginRight: 12,
+    marginRight: 2,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 20,
   },
   card: {
+    flexDirection: 'row',
     backgroundColor: '#fff',
-    padding: 15,
+    padding: 8,
     borderRadius: 10,
     marginBottom: 15,
     shadowColor: '#000',
@@ -244,19 +290,20 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 10,
+    paddingRight: 10,
   },
   validityText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
     // borderRightWidth:1,
-    borderColor:'#000',
-    paddingRight:10,
-  
+    borderColor: '#000',
+    paddingRight: 10,
+    marginBottom: 5
   },
   perDay: {
     fontSize: 12,
@@ -265,17 +312,38 @@ const styles = StyleSheet.create({
   cardDetails: {
     marginTop: 5,
   },
-  detailText: {
-    fontSize: 14,
-    color: '#555',
-    marginBottom: 4,
-    flexWrap:'wrap',
-    flex:1,
+  middleBox: {
+    // borderLeftWidth: 1,
+    // borderRightWidth: 1,
+    borderColor: '#ddd',
   },
   benefitText: {
-    fontSize: 14,
-    color: 'purple',
+    fontSize: 11,
+    color: '#555',
+    flexWrap: 'wrap',
+    maxWidth: '100%',
   },
+  detailBox: {
+    flexShrink: 1,
+    maxWidth: '30%',
+    minWidth: '30%',
+    paddingHorizontal: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingLeft: 5,
+    // flexDirection: 'row'
+    // remove margin or extra spacing if any
+  },
+  
+  detailItem: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: 'purple',
+    textAlign: 'center',
+    flexWrap: 'wrap',
+  },
+  
+
 });
 
 export default BrowsePlansScreen;

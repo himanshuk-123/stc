@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleRecharge as rechargeApiCall } from '../component/Commonfunction';
 import phone from '../../assets/phone_icon.png'
 const CompanyRechargeScreen = ({ route }) => {
-    const { operator, mode, opcodenew, number, price } = route.params;
+    const { operator, mode, opcodenew, number, price, headingTitle, screenName } = route.params;
     const [MobileNo, setMobileNo] = useState(operator.MobileNO ? operator.MobileNO : number || '');
     const [Amount, setAmount] = useState(price || '');
     const [loading, setLoading] = useState(false);
@@ -226,7 +226,9 @@ const CompanyRechargeScreen = ({ route }) => {
     return (
         <GradientLayout>
             <SafeAreaView style={styles.safeArea}>
-                <Header headingTitle={mode === "1" ? "Mobile Recharge" : "DTH Recharge"} screenName={mode === "1" ? "MobileRechargeScreen" : "DTHRechargeScreen"} />
+                <View style={{width:'90%'}}>
+                <Header headingTitle={headingTitle} screenName={screenName} />
+                </View>
                 {
                     showContactList ? (
                         <Modal visible={showContactList} animationType="slide">
@@ -306,7 +308,7 @@ const CompanyRechargeScreen = ({ route }) => {
                                 />
 
                                 {
-                                    mode === "1" ?
+                                    mode != "2" ?
                                         <TouchableOpacity >
                                             <Image source={contact} style={{ height: 30, width: 30 }} />
                                         </TouchableOpacity> : ""
@@ -324,6 +326,7 @@ const CompanyRechargeScreen = ({ route }) => {
                                     onChangeText={setAmount}
                                     textContentType="none"
                                     importantForAutofill="no"
+                                    maxLength={5}
                                 />
 
                                 <Image source={{ uri: imageToShow }} style={styles.operatorImage} resizeMode="contain" />
@@ -331,7 +334,8 @@ const CompanyRechargeScreen = ({ route }) => {
 
                             {
                                 mode === "1" ? (
-                                    opcodenew == "1" || opcodenew == "18" ? (
+                                  
+                                    (opcodenew == "1" || opcodenew == "18") ? (
                                         // When operator is 1 or 18 — show both buttons side by side
                                         <View style={styles.buttonContainer}>
                                             <CustomButton
@@ -371,24 +375,27 @@ const CompanyRechargeScreen = ({ route }) => {
                                             />
                                         </View>
                                     )
-                                ) : (
+                                ) : mode === "2" ? (
                                     // When mode is not 1 — show DTH buttons
                                     <View style={{ marginBottom: 16, gap: 10 }}>
                                         <CustomButton title="Customer Info" onPress={handleCustomerInfo} />
                                         <CustomButton title="DTH Plan" />
                                         <CustomButton title="Refresh DTH Service" />
                                     </View>
-                                )
+                                ) : null
                             }
 
 
                             <CustomButton title={loading ? "Proceeding..." : "Proceed"} onPress={showConfirmation} disabled={loading} />
-
-                            <View style={styles.noteContainer}>
-                                <Text style={styles.noteText}>
-                                    Note: Please verify {mode === "1" ? "recharge" : "DTH"} amount and benefits with your operator before proceeding. Plans have been shown basis latest available informatin and might not be accurate always. You can choose to DTH with any amount and benefit will be decided by your {mode === "1" ? "recharge" : "DTH"} operator.
-                                </Text>
-                            </View>
+                            {
+                                mode === "1" || mode === "2" ? (
+                                    <View style={styles.noteContainer}>
+                                        <Text style={styles.noteText}>
+                                            Note: Please verify {mode === "1" ? "recharge" : "DTH"} amount and benefits with your operator before proceeding. Plans have been shown basis latest available informatin and might not be accurate always. You can choose to DTH with any amount and benefit will be decided by your {mode === "1" ? "recharge" : "DTH"} operator.
+                                        </Text>
+                                    </View>
+                                ) : null
+                            }
                         </ScrollView>
                 }
 
@@ -508,7 +515,8 @@ const styles = StyleSheet.create({
     operatorName: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginTop: 8
+        marginTop: 8,
+        color: 'black'
     },
     inputContainer: {
         backgroundColor: 'white',

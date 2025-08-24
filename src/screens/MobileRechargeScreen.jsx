@@ -46,22 +46,20 @@ const MobileRechargeScreen = () => {
         payload.Location
       );
 
-      console.log('API Response:', response.data);
       const data = response.data;
+      console.log('API Response:', data);
 
-      if (data.STATUSCODE !== '1') {
+      if (data.ERROR === '11') {
         setShowErrorModal(true);
         setErrorMessage("Authentication failed");
       }
-      if (data.ERROR === '0') {
+      else if (data.ERROR === '0') {
         const formattedData = data.Operator.map((item, index) => ({
           id: index.toString(),
           opcodenew: item.opcodenew,
           name: item.operatorname,
           image: IMAGE_BASE_URL + item.operator_img.replace(/^~\//, ''),
         }))
-          ;
-
         setServices(formattedData);
       } else {
         console.log('API Error himanshu:', data.MESSAGE);
@@ -91,7 +89,7 @@ const MobileRechargeScreen = () => {
         imgwidth={horizontalScale(50)}
         gradientColors={['#ffffff', '#ffffff']}
         style={{ fontSize: moderateScale(12) }}
-        onPress={() => navigation.navigate('CompanyRecharge', {operator: item, mode: mode, opcodenew: item.opcodenew })}
+        onPress={() => navigation.navigate('CompanyRecharge', {operator: item, mode: mode, opcodenew: item.opcodenew ,headingTitle:"Mobile Recharge"})}
         cardsPerRow={3}
       />
     </View>
@@ -128,7 +126,7 @@ const MobileRechargeScreen = () => {
         return;
       }
       // Ab tum yahan API ya state update kar sakte ho
-      navigation.navigate('CompanyRecharge', { operator: operator, mode: mode, opcodenew: operatorCode, number: number });
+      navigation.navigate('CompanyRecharge', { operator: operator, mode: mode, opcodenew: operatorCode, number: number,headingTitle:"Mobile Recharge" });
       setPhoneNumber('');
     } catch (error) {
       console.log("Error:", error);

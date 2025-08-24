@@ -14,6 +14,7 @@ import BottomSection from '../component/BottomSection';
 
 const services = [
     { id: '1', name: 'Comissions', image: require('../../assets/commimg.png'), navigate: 'Comission' },
+    { id: '2', name: 'Payment Request', image: require('../../assets/requestMoney.webp'), navigate: 'PaymentRequest' },
     // Add rest of your services here...
 ];
 

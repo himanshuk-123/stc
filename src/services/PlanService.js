@@ -11,6 +11,9 @@ export const PlanService = {
             Tokenid,Version, Operator, MobileNo, Location
         }),
     GetBrowsePlan: () =>
-        api.get('/BrowseCircleList')
+        api.get('/BrowseCircleList'),
+
+    FetchBank: (payload)=>
+        api.post('/BankDetails', payload)
 }
 
