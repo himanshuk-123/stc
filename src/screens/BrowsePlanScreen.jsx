@@ -10,47 +10,56 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import Header from '../component/Header';
-import { verticalScale } from '../utils/responsive';
-import GradientLayout from '../component/GradientLayout';
 import { useNavigation } from '@react-navigation/native';
-import wifi from '../../assets/wifi.png'
-import phone from '../../assets/phone_icon.png'
-import sms from '../../assets/sms.png'
+import Header from '../component/Header';
+import GradientLayout from '../component/GradientLayout';
+import { verticalScale } from '../utils/responsive';
+import { COLORS, FONT_SIZES, FONT_WEIGHTS, BORDERS, SHADOWS } from '../utils/theme';
+
+// Import assets
+import wifi from '../../assets/wifi.png';
+import phone from '../../assets/phone_icon.png';
+import sms from '../../assets/sms.png';
 const BrowsePlansScreen = ({ route }) => {
   const { opcodenew, stateId, mode, operator, number } = route.params;
-  const [browsePlanData, setBrowsePlanData] = useState(null);
+  const [planData, setPlanData] = useState(null);
   const [groupedData, setGroupedData] = useState({});
   const [selectedType, setSelectedType] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigation = useNavigation();
 
+  /**
+   * Fetches plan data from API
+   */
   const fetchPlanData = async () => {
     setLoading(true);
+    setError(null);
+    
     try {
       const response = await fetch(
         `https://onlinerechargeservice.in/App/webservice/BrowsePlan2?OpCode=${opcodenew}&CircleID=${stateId}`,
         { method: 'POST' }
       );
 
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.status}`);
+      }
+
       const json = await response.json();
       const data = json?.RDATA;
 
-      if (json?.STATUS != '1') {
-        Alert.alert("Error", json?.MESSAGE, [
-          {
-            text: "OK",
-            onPress: () => {
-              navigation.goBack();
-            },
-          },
+      if (json?.STATUS !== '1') {
+        const errorMessage = json?.MESSAGE || 'Failed to fetch plan data';
+        Alert.alert("Error", errorMessage, [
+          { text: "OK", onPress: () => navigation.goBack() }
         ]);
-        return;
+        throw new Error(errorMessage);
       }
 
-      setBrowsePlanData(data);
+      setPlanData(data);
       const grouped = groupPlansByType(data || []);
       setGroupedData(grouped);
 
@@ -58,130 +67,124 @@ const BrowsePlansScreen = ({ route }) => {
       if (!selectedType || !types.includes(selectedType)) {
         setSelectedType(types[0] || '');
       }
-    } catch (error) {
-      console.error('Error fetching plan data:', error);
+    } catch (err) {
+      console.error('Error fetching plan data:', err);
+      setError(err.message);
     } finally {
       setRefreshing(false);
       setLoading(false);
     }
   };
 
+  // Fetch data on component mount
   useEffect(() => {
-    fetchPlanData();
-  }, []);
+    const getData = async () => {
+      await fetchPlanData();
+    };
+    getData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opcodenew, stateId]); // Re-fetch when key parameters change
 
+  /**
+   * Handle refresh action
+   */
   const onRefresh = () => {
     setRefreshing(true);
     fetchPlanData();
   };
 
-  const renderItem = ({ item }) => (
+  /**
+   * Render a tab item for plan types
+   */
+  const renderTabItem = ({ item }) => (
     <TouchableOpacity
       style={[
         styles.tabItem,
-        { backgroundColor: item === selectedType ? 'blue' : '#ffffff' },
+        { 
+          backgroundColor: item === selectedType ? COLORS.secondary : COLORS.card 
+        }
       ]}
       onPress={() => setSelectedType(item)}
     >
-      <Text style={{ color: item === selectedType ? '#fff' : '#000', fontWeight: '600' }}>
+      <Text 
+        style={{ 
+          color: item === selectedType ? COLORS.textSecondary : COLORS.text,
+          fontWeight: FONT_WEIGHTS.semiBold
+        }}
+      >
         {item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()}
       </Text>
     </TouchableOpacity>
   );
 
-  const renderPlanCard = ({ item }) => (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={() => {
-        setSelectedPlan(selectedPlan?.id === item.id ? null : item);
-        navigation.replace('CompanyRecharge', {
-          operator,
-          mode,
-          opcodenew,
-          price: item.price,
-          number,
-          headingTitle:"Mobile Recharge"
-        });
-      }}
-    >
-      <View
-        style={[
-          styles.card,
-          {
-            borderColor: selectedPlan?.id === item.id ? '#6c5ce7' : '#f1f2f6',
-            borderWidth: selectedPlan?.id === item.id ? 1.5 : 1,
-            elevation: selectedPlan?.id === item.id ? 5 : 2,
-          },
-        ]}
-      >
-        <View style={styles.cardHeader}>
-          <Text style={styles.validityText}>₹{item.price}</Text>
-          <Text style={{ fontSize: 12, color: 'black', fontWeight: 'bold' }}>({item.validityDays} days)</Text>
-          <Text style={styles.perDay}>@ ₹{item.dailyCost}/D</Text>
-        </View>
-
-        <View style={{ flex: 1, paddingLeft: 5, borderLeftWidth: 1, borderColor: '#ccc' }}>
-  <View
-    style={{
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      alignItems: 'flex-start',
-      marginBottom: 10,
-      rowGap: 8, // vertical spacing
-      columnGap: 10, // horizontal spacing (acts like gap: 10 in web)
-    }}
-  >
-   {
-  [
-    { type: 'data', value: item.data, icon: wifi },
-    { type: 'calls', value: item.calls, icon: phone },
-    { type: 'sms', value: item.sms, icon: sms }
-  ]
-    .filter(i => i.value) // sirf available values render hongi
-    .map((i, index, arr) => {
-      const isFirst = index === 0;
-      const isLast = index === arr.length - 1;
-
-      return (
-        <View
-          key={i.type}
-          style={[
-            styles.detailBox,
-            // {
-            //   borderLeftWidth: isFirst ? 0 : 1,
-            //   borderRightWidth: isLast ? 0 : 1,
-            //   borderColor: 'purple',
-            // },
-          ]}
-        >
-          <Image source={i.icon} style={{ width: 20, height: 20, marginBottom: 5 }} />
-          <Text style={styles.detailItem}> {i.value}</Text>
-        </View>
-      );
-    })
-}
-
-
-  </View>
-
-  <View>
-    <Text style={styles.benefitText}>{item.benefit}</Text>
-  </View>
-</View>
-
-
-
-
-
+  /**
+   * Render a feature icon with text
+   */
+  const renderFeatureItem = (feature, icon) => {
+    if (!feature) return null;
+    
+    return (
+      <View style={styles.detailBox}>
+        <Image source={icon} style={styles.featureIcon} />
+        <Text style={styles.detailItem}>{feature}</Text>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  };
+
+  /**
+   * Render a plan card
+   */
+  const renderPlanCard = ({ item }) => {
+    const isPlanSelected = selectedPlan?.id === item.id;
+    const cardStyle = {
+      borderColor: isPlanSelected ? COLORS.primary : COLORS.border,
+      borderWidth: isPlanSelected ? BORDERS.width.thick : BORDERS.width.regular,
+      elevation: isPlanSelected ? 5 : 2
+    };
+    
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => {
+          setSelectedPlan(isPlanSelected ? null : item);
+          navigation.replace('CompanyRecharge', {
+            operator,
+            mode,
+            opcodenew,
+            price: item.price,
+            number,
+            headingTitle: "Mobile Recharge"
+          });
+        }}
+      >
+        <View style={[styles.card, cardStyle]}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.priceText}>₹{item.price}</Text>
+            <Text style={styles.validityDays}>({item.validityDays} days)</Text>
+            <Text style={styles.perDay}>@ ₹{item.dailyCost}/D</Text>
+          </View>
+
+          <View style={styles.detailsContainer}>
+            <View style={styles.featuresContainer}>
+              {renderFeatureItem(item.data, wifi)}
+              {renderFeatureItem(item.calls, phone)}
+              {renderFeatureItem(item.sms, sms)}
+            </View>
+
+            <View>
+              <Text style={styles.benefitText}>{item.benefit}</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
     return (
       <GradientLayout>
         <SafeAreaView style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color={COLORS.secondary} />
         </SafeAreaView>
       </GradientLayout>
     );
@@ -196,7 +199,7 @@ const BrowsePlansScreen = ({ route }) => {
           <FlatList
             horizontal
             data={prioritizeTabs(Object.keys(groupedData))}
-            renderItem={renderItem}
+            renderItem={renderTabItem}
             keyExtractor={(item) => item}
             showsHorizontalScrollIndicator={false}
           />
@@ -205,9 +208,9 @@ const BrowsePlansScreen = ({ route }) => {
         <FlatList
           data={groupedData[selectedType] || []}
           renderItem={renderPlanCard}
-          keyExtractor={(_, index) => index.toString()}
+          keyExtractor={(item, index) => `${item.id || ''}-${index}`}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 130 }}
+          contentContainerStyle={styles.plansList}
           refreshing={refreshing}
           onRefresh={onRefresh}
         />
@@ -263,11 +266,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabsContainer: {
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: 'purple',
-    borderBottomWidth: 1,
-    borderBottomColor: 'purple',
+    backgroundColor: COLORS.card,
+    borderTopWidth: BORDERS.width.regular,
+    borderTopColor: COLORS.accent,
+    borderBottomWidth: BORDERS.width.regular,
+    borderBottomColor: COLORS.accent,
     paddingVertical: verticalScale(8),
   },
   tabItem: {
@@ -276,18 +279,18 @@ const styles = StyleSheet.create({
     marginRight: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: BORDERS.radius.lg,
+  },
+  plansList: {
+    paddingBottom: 130,
   },
   card: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.background,
     padding: 8,
-    borderRadius: 10,
+    borderRadius: BORDERS.radius.md,
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...SHADOWS.small,
   },
   cardHeader: {
     flexDirection: 'column',
@@ -296,32 +299,35 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingRight: 10,
   },
-  validityText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-    // borderRightWidth:1,
-    borderColor: '#000',
+  priceText: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: FONT_WEIGHTS.bold,
+    color: COLORS.text,
     paddingRight: 10,
-    marginBottom: 5
+    marginBottom: 5,
+  },
+  validityDays: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.text,
+    fontWeight: FONT_WEIGHTS.bold,
   },
   perDay: {
-    fontSize: 12,
-    color: 'green',
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.success,
   },
-  cardDetails: {
-    marginTop: 5,
+  detailsContainer: {
+    flex: 1,
+    paddingLeft: 5,
+    borderLeftWidth: BORDERS.width.regular,
+    borderColor: COLORS.borderDark,
   },
-  middleBox: {
-    // borderLeftWidth: 1,
-    // borderRightWidth: 1,
-    borderColor: '#ddd',
-  },
-  benefitText: {
-    fontSize: 11,
-    color: '#555',
+  featuresContainer: {
+    flexDirection: 'row',
     flexWrap: 'wrap',
-    maxWidth: '100%',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+    rowGap: 8,
+    columnGap: 10,
   },
   detailBox: {
     flexShrink: 1,
@@ -330,20 +336,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingLeft: 5,
-    // flexDirection: 'row'
-    // remove margin or extra spacing if any
   },
-  
+  featureIcon: {
+    width: 20,
+    height: 20,
+    marginBottom: 5,
+  },
   detailItem: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: 'purple',
+    fontSize: FONT_SIZES.sm,
+    fontWeight: FONT_WEIGHTS.bold,
+    color: COLORS.accent,
     textAlign: 'center',
     flexWrap: 'wrap',
   },
-  
-
+  benefitText: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textLight,
+    flexWrap: 'wrap',
+    maxWidth: '100%',
+  },
 });
 
 export default BrowsePlansScreen;

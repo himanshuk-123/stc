@@ -1,102 +1,110 @@
+/**
+ * AppNavigator - Main navigation container for authenticated users
+ */
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+// Import navigation configuration
+import { ROUTES, SCREEN_OPTIONS } from './NavigationConfig';
 
 // Import Tab Router
 import TabRouter from '../router/tabRouter';
 
-// Import main app screens
-import AddMoneyScreen from '../screens/AddMoneyScreen';
-import RechargeScreen from '../screens/RechargeScreen';
-import ReportsScreen from '../screens/ReportsScreen';
+// Import stack navigators
+import RechargeStack from './stacks/RechargeStack';
+import ReportsStack from './stacks/ReportsStack';
+import PaymentStack from './stacks/PaymentStack';
+import ProfileStack from './stacks/ProfileStack';
+import SupportStack from './stacks/SupportStack';
+
+// Import screens that don't fit into specific stacks
 import NotificationScreen from '../screens/NotificationScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import MobileRechargeScreen from '../screens/MobileRechargeScreen';
-import CompanyRechargeScreen from '../screens/CompanyRechargeScreen';
-import DTHRechargeScreen from '../screens/DTHRechargeScreen';
-import ComissionScreen from '../screens/ComissionScreen';
-import TransactionReportScreen from '../screens/TransactionReportScreen';
-  // import BalanceCheckScreen from '../screens/BalanceCheckScreen';
-import ComplainListScreen from '../screens/ComplainListScreen';
-import StandingReportScreen from '../screens/StandingReportScreen';
-import UserDayBookScreen from '../screens/UserDayBookScreen';
-import FundRequestListScreen from '../screens/FundRequestListScreen';
-import MemberListScreen from '../screens/MemberListScreen';
-import SupportScreen from '../screens/SupportScreen';
-import ContactScreen from '../screens/ContactScreen';
-import ChangePasswordScreen from '../screens/ChangePasswordScreen';
-import EnterPinScreen from '../screens/EnterPinScreen';
-import QrScanner from '../screens/QrScanner';
-import WalletPaymentScreen from '../screens/WalletPaymentScreen';
-import WalletTopupScreen from '../screens/WalletTopupScreen';
-import BrowsePlanScreen from '../screens/BrowsePlanScreen';
-import ChangePinScreen from '../screens/ChangePinScreen';
-import ReportsListScreen from '../screens/ReportsListScreen';
-import RechargeReportScreen from '../screens/RechargeReportScreen';
-import BrowsePlanStateSelection from '../screens/BrowsePlanStateSelection';
-import SpecialOffersScreen from '../screens/SpecialOffersScreen';
-import EnableDisablePinScreen from '../screens/EnableDisablePinScreen'  ;
-import AddUserScreen from '../screens/AddUserScreen';
-import RegisterScreen from '../screens/RegisterScreen';
-import OtpVerifyScreen from '../screens/otpVerifyScreen';
 import HomeScreen2 from '../screens/HomeScreen2';
-import ServicesScreen from '../screens/ServicesScreen';
-import BookComplain from '../screens/BookComplain';
 import PrintScreen from '../screens/PrintScreen';
-import MoreScreen from '../screens/MoreScreen';
-import BillPaymentsScreen from '../screens/BillPaymentsScreen';
-import PaymentRequest from '../screens/PaymentRequest';
-import OperatorDetailsScreen from '../screens/OperatorDetailsScreen';
-import ProgressScreen from '../screens/ProgressScreen';
+
 const Stack = createNativeStackNavigator();
 
+/**
+ * Main app navigator for authenticated users
+ * Uses stack navigation with tab navigation nested inside
+ * @returns {React.ReactElement} Stack navigator component
+ */
 const AppNavigator = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MainTabs" component={TabRouter} />
-      <Stack.Screen name="AddMoney" component={AddMoneyScreen} />
-      <Stack.Screen name="Recharge" component={RechargeScreen} />
-      <Stack.Screen name="Reports" component={ReportsScreen} />
-      <Stack.Screen name="Notification" component={NotificationScreen} />
-      <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="MobileRecharge" component={MobileRechargeScreen} />
-      <Stack.Screen name="CompanyRecharge" component={CompanyRechargeScreen} />
-      <Stack.Screen name="DTHRecharge" component={DTHRechargeScreen} />
-      <Stack.Screen name="Comission" component={ComissionScreen} />
-      <Stack.Screen name="TransactionReport" component={TransactionReportScreen} />
-      {/* <Stack.Screen name="BalanceCheck" component={BalanceCheckScreen} /> */}
-      <Stack.Screen name="ComplainList" component={ComplainListScreen} />
-      <Stack.Screen name="StandingReport" component={StandingReportScreen} />
-      <Stack.Screen name="UserDayBook" component={UserDayBookScreen} />
-      <Stack.Screen name="FundRequestList" component={FundRequestListScreen} />
-      <Stack.Screen name="MemberList" component={MemberListScreen} />
-      <Stack.Screen name="Support" component={SupportScreen} />
-      <Stack.Screen name="Contact" component={ContactScreen} />
-      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-      <Stack.Screen name="EnterPin" component={EnterPinScreen} />
-      <Stack.Screen name="QrScanner" component={QrScanner} />
-      <Stack.Screen name="WalletPayment" component={WalletPaymentScreen} />
-      <Stack.Screen name="WalletTopup" component={WalletTopupScreen} />
-      <Stack.Screen name="BrowsePlan" component={BrowsePlanScreen} />
-      <Stack.Screen name="BrowsePlanStateSelection" component={BrowsePlanStateSelection} />
-      <Stack.Screen name="ChangePin" component={ChangePinScreen} />
-      <Stack.Screen name="ReportsList" component={ReportsListScreen} />
-      <Stack.Screen name="RechargeReport" component={RechargeReportScreen} />
-      <Stack.Screen name="SpecialOffers" component={SpecialOffersScreen} />
-      <Stack.Screen name="EnableDisablePin" component={EnableDisablePinScreen} />
-      <Stack.Screen name="AddUser" component={AddUserScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="OtpVerify" component={OtpVerifyScreen} />
-      <Stack.Screen name="HomeScreen2" component={HomeScreen2} />
-      <Stack.Screen name="Services" component={ServicesScreen} />
-      <Stack.Screen name="BookComplain" component={BookComplain} />
-      <Stack.Screen name="PrintScreen" component={PrintScreen} />
-      <Stack.Screen name="MoreScreen" component={MoreScreen} />
-      <Stack.Screen name="BillPayments" component={BillPaymentsScreen} />
-      <Stack.Screen name="PaymentRequest" component={PaymentRequest} />
-      <Stack.Screen name="OperatorDetails" component={OperatorDetailsScreen} />
-      <Stack.Screen name="ProgressScreen" component={ProgressScreen} />
+    <Stack.Navigator 
+      initialRouteName={ROUTES.APP.MAIN_TABS}
+      screenOptions={SCREEN_OPTIONS.DEFAULT}
+    >
+      {/* Main tab navigation */}
+      <Stack.Screen name={ROUTES.APP.MAIN_TABS} component={TabRouter} />
+      
+      {/* Feature-specific stack navigators */}
+      <Stack.Screen name="RechargeStack" component={RechargeStack} options={{ headerShown: false }} />
+      <Stack.Screen name="ReportsStack" component={ReportsStack} options={{ headerShown: false }} />
+      <Stack.Screen name="PaymentStack" component={PaymentStack} options={{ headerShown: false }} />
+      <Stack.Screen name="ProfileStack" component={ProfileStack} options={{ headerShown: false }} />
+      <Stack.Screen name="SupportStack" component={SupportStack} options={{ headerShown: false }} />
+      
+      {/* Standalone screens */}
+      <Stack.Screen name={ROUTES.APP.NOTIFICATION} component={NotificationScreen} />
+      <Stack.Screen name={ROUTES.APP.HOME_SCREEN_2} component={HomeScreen2} />
+      <Stack.Screen name={ROUTES.APP.PRINT_SCREEN} component={PrintScreen} />
+      
+      {/* For backward compatibility - these will be removed after migrating to stack navigators */}
+      {/* Individual screens listed here for backward compatibility during migration */}
+      <Stack.Group>
+        {/* Recharge screens */}
+        <Stack.Screen name="Recharge" component={RechargeStack} initialParams={{ screen: ROUTES.RECHARGE.MAIN }} />
+        <Stack.Screen name="MobileRecharge" component={RechargeStack} initialParams={{ screen: ROUTES.RECHARGE.MOBILE }} />
+        <Stack.Screen name="DTHRecharge" component={RechargeStack} initialParams={{ screen: ROUTES.RECHARGE.DTH }} />
+        <Stack.Screen name="CompanyRecharge" component={RechargeStack} initialParams={{ screen: ROUTES.RECHARGE.COMPANY }} />
+        <Stack.Screen name="BrowsePlan" component={RechargeStack} initialParams={{ screen: ROUTES.RECHARGE.BROWSE_PLAN }} />
+        <Stack.Screen name="BrowsePlanStateSelection" component={RechargeStack} initialParams={{ screen: ROUTES.RECHARGE.BROWSE_PLAN_STATE }} />
+        <Stack.Screen name="SpecialOffers" component={RechargeStack} initialParams={{ screen: ROUTES.RECHARGE.SPECIAL_OFFERS }} />
+        <Stack.Screen name="OperatorDetails" component={RechargeStack} initialParams={{ screen: ROUTES.RECHARGE.OPERATOR_DETAILS }} />
+        <Stack.Screen name="ProgressScreen" component={RechargeStack} initialParams={{ screen: ROUTES.RECHARGE.PROGRESS }} />
+        
+        {/* Payment screens */}
+        <Stack.Screen name="AddMoney" component={PaymentStack} initialParams={{ screen: ROUTES.PAYMENT.ADD_MONEY }} />
+        <Stack.Screen name="WalletPayment" component={PaymentStack} initialParams={{ screen: ROUTES.PAYMENT.WALLET_PAYMENT }} />
+        <Stack.Screen name="WalletTopup" component={PaymentStack} initialParams={{ screen: ROUTES.PAYMENT.WALLET_TOPUP }} />
+        <Stack.Screen name="PaymentRequest" component={PaymentStack} initialParams={{ screen: ROUTES.PAYMENT.PAYMENT_REQUEST }} />
+        <Stack.Screen name="BillPayments" component={PaymentStack} initialParams={{ screen: ROUTES.PAYMENT.BILL_PAYMENTS }} />
+        <Stack.Screen name="QrScanner" component={PaymentStack} initialParams={{ screen: ROUTES.PAYMENT.QR_SCANNER }} />
+        
+        {/* Reports screens */}
+        <Stack.Screen name="Reports" component={ReportsStack} initialParams={{ screen: ROUTES.REPORTS.MAIN }} />
+        <Stack.Screen name="TransactionReport" component={ReportsStack} initialParams={{ screen: ROUTES.REPORTS.TRANSACTION }} />
+        <Stack.Screen name="StandingReport" component={ReportsStack} initialParams={{ screen: ROUTES.REPORTS.STANDING }} />
+        <Stack.Screen name="UserDayBook" component={ReportsStack} initialParams={{ screen: ROUTES.REPORTS.USER_DAY_BOOK }} />
+        <Stack.Screen name="FundRequestList" component={ReportsStack} initialParams={{ screen: ROUTES.REPORTS.FUND_REQUEST_LIST }} />
+        <Stack.Screen name="ReportsList" component={ReportsStack} initialParams={{ screen: ROUTES.REPORTS.REPORTS_LIST }} />
+        <Stack.Screen name="RechargeReport" component={ReportsStack} initialParams={{ screen: ROUTES.REPORTS.RECHARGE_REPORT }} />
+        <Stack.Screen name="Comission" component={ReportsStack} initialParams={{ screen: ROUTES.REPORTS.COMMISSION }} />
+        
+        {/* Profile screens */}
+        <Stack.Screen name="Profile" component={ProfileStack} initialParams={{ screen: ROUTES.PROFILE.MAIN }} />
+        <Stack.Screen name="ChangePassword" component={ProfileStack} initialParams={{ screen: ROUTES.PROFILE.CHANGE_PASSWORD }} />
+        <Stack.Screen name="ChangePin" component={ProfileStack} initialParams={{ screen: ROUTES.PROFILE.CHANGE_PIN }} />
+        <Stack.Screen name="EnableDisablePin" component={ProfileStack} initialParams={{ screen: ROUTES.PROFILE.ENABLE_DISABLE_PIN }} />
+        <Stack.Screen name="EnterPin" component={ProfileStack} initialParams={{ screen: ROUTES.PROFILE.ENTER_PIN }} />
+        <Stack.Screen name="MemberList" component={ProfileStack} initialParams={{ screen: ROUTES.PROFILE.MEMBER_LIST }} />
+        <Stack.Screen name="AddUser" component={ProfileStack} initialParams={{ screen: ROUTES.PROFILE.ADD_USER }} />
+        
+        {/* Support screens */}
+        <Stack.Screen name="Support" component={SupportStack} initialParams={{ screen: ROUTES.SUPPORT.MAIN }} />
+        <Stack.Screen name="Contact" component={SupportStack} initialParams={{ screen: ROUTES.SUPPORT.CONTACT }} />
+        <Stack.Screen name="ComplainList" component={SupportStack} initialParams={{ screen: ROUTES.SUPPORT.COMPLAIN_LIST }} />
+        <Stack.Screen name="BookComplain" component={SupportStack} initialParams={{ screen: ROUTES.SUPPORT.BOOK_COMPLAIN }} />
+        
+        {/* Other screens */}
+        <Stack.Screen name="Register" component={ProfileStack} initialParams={{ screen: ROUTES.PROFILE.ADD_USER }} />
+        <Stack.Screen name="OtpVerify" component={ProfileStack} initialParams={{ screen: ROUTES.PROFILE.ADD_USER }} />
+        <Stack.Screen name="Services" component={TabRouter} initialParams={{ screen: ROUTES.APP.SERVICES }} />
+        <Stack.Screen name="MoreScreen" component={TabRouter} initialParams={{ screen: ROUTES.APP.MORE }} />
+      </Stack.Group>
     </Stack.Navigator>
   );
 };
 
-export default AppNavigator; 
+export default AppNavigator;

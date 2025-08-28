@@ -5,12 +5,21 @@ import HomeScreen from '../screens/HomeScreen';
 import ServicesScreen from '../screens/ServicesScreen';
 import MoreScreen from '../screens/MoreScreen';
 
+// Import assets
 import home1 from '../../assets/home1.png';
 import services1 from '../../assets/services1.png';
 import more1 from '../../assets/more1.png';
 
+// Import theme constants
+import { COLORS } from '../constants/colors';
+import { moderateScale } from '../utils/responsive';
+
 const Tab = createBottomTabNavigator();
 
+/**
+ * TabRouter - Bottom tab navigation component for main app sections
+ * @returns {React.ReactElement} Bottom tab navigator component
+ */
 export default function TabRouter() {
   return (
     <Tab.Navigator
@@ -20,9 +29,11 @@ export default function TabRouter() {
         headerShown: false,
         tabBarStyle: {
           height: 60,
-          backgroundColor: '#fff',
+          backgroundColor: COLORS.WHITE,
           borderTopWidth: 1,
-          borderColor: '#ccc',
+          borderColor: COLORS.BORDER,
+          elevation: 0,
+          shadowOpacity: 0,
         },
         // custom tab bar button
         tabBarButton: (props) => {
@@ -40,8 +51,11 @@ export default function TabRouter() {
                 marginHorizontal: 10,
                 marginVertical: 6,
                 borderRadius: 12,
-                backgroundColor: isSelected ? '#d0f0c0' : 'transparent',
+                backgroundColor: isSelected ? COLORS.TAB_ACTIVE : 'transparent',
               }}
+              accessibilityRole="button"
+              accessibilityLabel={`${route.name} tab`}
+              accessibilityState={{ selected: isSelected }}
             >
               {children}
             </TouchableOpacity>
@@ -60,17 +74,36 @@ export default function TabRouter() {
               style={{
                 width: 26,
                 height: 26,
-                tintColor: focused ? 'blue' : 'gray',
+                tintColor: focused ? COLORS.PRIMARY : COLORS.INACTIVE,
               }}
               resizeMode="contain"
+              accessibilityIgnoresInvertColors={true}
             />
           );
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Services" component={ServicesScreen} />
-      <Tab.Screen name="More" component={MoreScreen} />
+      <Tab.Screen 
+        name="Home" 
+        component={HomeScreen}
+        options={{
+          tabBarAccessibilityLabel: "Home Screen"
+        }}
+      />
+      <Tab.Screen 
+        name="Services" 
+        component={ServicesScreen}
+        options={{
+          tabBarAccessibilityLabel: "Services Screen"
+        }}
+      />
+      <Tab.Screen 
+        name="More" 
+        component={MoreScreen}
+        options={{
+          tabBarAccessibilityLabel: "More Screen"
+        }}
+      />
     </Tab.Navigator>
   );
 }

@@ -14,7 +14,7 @@ import React, { useState, useEffect } from 'react'
 import logo from "../../assets/logo.png";
 import phn from '../../assets/phone_icon.png'
 import GradientLayout from "../component/GradientLayout";
-import Geolocation from "react-native-geolocation-service";
+  import Geolocation from "react-native-geolocation-service";
 import ApiService from "../services/authService";
 import CustomButton from "../component/button";
 import { useAppDispatch } from "../redux/hooks";

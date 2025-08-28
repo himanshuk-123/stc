@@ -1,31 +1,51 @@
+/**
+ * Responsive utility functions for consistent UI scaling across different device sizes
+ */
 import { Dimensions, PixelRatio } from 'react-native';
 
+// Get device dimensions
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Base dimensions - we're using iPhone 8 as our base size
-const baseWidth = 375;
-const baseHeight = 667;
-const standardScreenHeight = 680;
+// All calculations will be relative to these dimensions
+const BASE_WIDTH = 375;
+const BASE_HEIGHT = 667;
 
-// Scales the size based on screen width
+/**
+ * Scales a size horizontally based on screen width
+ * @param {number} size - Size to scale
+ * @returns {number} - Scaled size
+ */
 export const horizontalScale = (size) => {
-  const scale = SCREEN_WIDTH / baseWidth;
+  const scale = SCREEN_WIDTH / BASE_WIDTH;
   return size * scale;
 };
 
-// Scales the size based on screen height
+/**
+ * Scales a size vertically based on screen height
+ * @param {number} size - Size to scale
+ * @returns {number} - Scaled size
+ */
 export const verticalScale = (size) => {
-  const scale = SCREEN_HEIGHT / baseHeight;
+  const scale = SCREEN_HEIGHT / BASE_HEIGHT;
   return size * scale;
 };
 
-// Scales the font size with a factor to avoid too large fonts on big screens
+/**
+ * Scales the font size with a factor to avoid too large fonts on big screens
+ * @param {number} size - Size to scale
+ * @param {number} [factor=0.5] - Factor to reduce scaling effect
+ * @returns {number} - Moderately scaled size
+ */
 export const moderateScale = (size, factor = 0.5) => {
-  const scale = SCREEN_WIDTH / baseWidth;
+  const scale = SCREEN_WIDTH / BASE_WIDTH;
   return size + (scale - 1) * size * factor;
 };
 
-// Get screen dimensions
+/**
+ * Gets current screen dimensions
+ * @returns {Object} - Width and height of the screen
+ */
 export const getScreenDimensions = () => {
   return {
     width: SCREEN_WIDTH,
@@ -33,12 +53,20 @@ export const getScreenDimensions = () => {
   };
 };
 
-// Calculate percentage of screen width (similar to wp from react-native-responsive-screen)
+/**
+ * Calculates percentage of screen width
+ * @param {number} percentage - Percentage value (0-100)
+ * @returns {number} - Width value corresponding to the percentage
+ */
 export const wp = (percentage) => {
   return (percentage / 100) * SCREEN_WIDTH;
 };
 
-// Calculate percentage of screen height (similar to hp from react-native-responsive-screen)
+/**
+ * Calculates percentage of screen height
+ * @param {number} percentage - Percentage value (0-100)
+ * @returns {number} - Height value corresponding to the percentage
+ */
 export const hp = (percentage) => {
   return (percentage / 100) * SCREEN_HEIGHT;
 };
@@ -47,10 +75,41 @@ export const hp = (percentage) => {
 export const widthPercentage = wp;
 export const heightPercentage = hp;
 
-// RFValue function (similar to react-native-responsive-fontsize)
+/**
+ * Responsive Font Size (similar to react-native-responsive-fontsize)
+ * @param {number} fontSize - Base font size
+ * @param {number} [standardScreenHeight=680] - Standard screen height for reference
+ * @returns {number} - Responsive font size
+ */
 export const RFValue = (fontSize, standardScreenHeight = 680) => {
   const heightPercent = (SCREEN_HEIGHT * 100) / standardScreenHeight;
-  return Math.round(fontSize * heightPercent / 100);
+  return PixelRatio.roundToNearestPixel(fontSize * heightPercent / 100);
+};
+
+/**
+ * Get pixel density of the device
+ * @returns {number} - Device pixel density
+ */
+export const getPixelDensity = () => {
+  return PixelRatio.get();
+};
+
+/**
+ * Convert dp to px
+ * @param {number} dp - Density-independent pixels
+ * @returns {number} - Pixels
+ */
+export const dpToPx = (dp) => {
+  return PixelRatio.getPixelSizeForLayoutSize(dp);
+};
+
+/**
+ * Convert px to dp
+ * @param {number} px - Pixels
+ * @returns {number} - Density-independent pixels
+ */
+export const pxToDp = (px) => {
+  return PixelRatio.roundToNearestPixel(px);
 };
 
 // Responsive font sizing with additional control
@@ -59,8 +118,8 @@ export const responsiveFontSize = (size, factor = 0.5) => {
 };
 
 // Responsive image dimensions
-export const responsiveImageDimensions = (baseWidth, baseHeight, widthPercentage = 0.2) => {
-  const calculatedWidth = SCREEN_WIDTH * widthPercentage;
+export const responsiveImageDimensions = (baseWidth, baseHeight, widthPercent = 0.2) => {
+  const calculatedWidth = SCREEN_WIDTH * widthPercent;
   const calculatedHeight = (calculatedWidth / baseWidth) * baseHeight;
   
   return {
