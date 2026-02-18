@@ -354,8 +354,8 @@ const CompanyRechargeScreen = ({ route }) => {
                             {
                                 mode === "1" ? (
                                   
-                                    (opcodenew == "1" || opcodenew == "18") ? (
-                                        // When operator is 1 or 18 — show both buttons side by side
+                                    ([1, 2, 6, 18].includes(opcodenew ? parseInt(opcodenew) : parseInt(operator.OpTypeId))) ? (
+                                        // When operator is Airtel, Idea, Vodafone, or VodaIdea — show both buttons side by side
                                         <View style={styles.buttonContainer}>
                                             <CustomButton
                                                 title="Special Offers"
