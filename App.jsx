@@ -6,6 +6,8 @@ import store from './src/redux/store'
 import RootNavigator from './src/navigation/RootNavigator'
 import { setupNotifications } from './src/utils/notificationService'
 import notifee, { EventType } from '@notifee/react-native'
+import Toast from 'react-native-toast-message'
+import { setupAxiosInterceptors } from './src/utils/axiosConfig'
 // Import background handler to ensure it's included in the bundle
 import './src/utils/notificationBackgroundHandler'
 import { markNotificationAsRead } from './src/utils/notificationStorage'
@@ -13,6 +15,9 @@ import { markNotificationAsRead } from './src/utils/notificationStorage'
 
 const App = () => {
   useEffect(() => {
+    // Setup global axios interceptors for network error handling
+    setupAxiosInterceptors();
+    
     // Initialize Notifee foreground handler
     const unsubscribeNotifee = notifee.onForegroundEvent(({ type, detail }) => {
       console.log('Notifee foreground event:', type, detail);
@@ -63,6 +68,7 @@ const App = () => {
         <SafeAreaView style={{ flex: 1 }}>
           <RootNavigator />
       </SafeAreaView>
+      <Toast />
     </LinearGradient>
     </Provider>
   )

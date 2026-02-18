@@ -48,6 +48,7 @@ import PaymentRequest from '../screens/PaymentRequest';
 import OperatorDetailsScreen from '../screens/OperatorDetailsScreen';
 import ProgressScreen from '../screens/ProgressScreen';
 import GeneratQrCode from '../component/GeneratQrCode';
+import PayUScreen from '../screens/PayUScreen';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -97,6 +98,7 @@ const AppNavigator = () => {
       <Stack.Screen name="OperatorDetails" component={OperatorDetailsScreen} />
       <Stack.Screen name="ProgressScreen" component={ProgressScreen} />
       <Stack.Screen name="QrCode" component={GeneratQrCode}/>
+      <Stack.Screen name="PayU" component={PayUScreen} />
     </Stack.Navigator>
   );
 };

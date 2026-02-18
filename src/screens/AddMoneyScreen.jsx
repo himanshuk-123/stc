@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, Alert } from 'react-native';
+import { View, Text, SafeAreaView, StyleSheet } from 'react-native';
 import React from 'react';
 import Header from '../component/Header';
 import Cards from '../component/cards';
@@ -39,7 +39,7 @@ const AddMoneyScreen = () => {
               width={cardWidth}
               imgheight={verticalScale(30)}
               imgwidth={horizontalScale(70)}
-              onPress={() => Alert.alert('Coming Soon')}
+              onPress={() => navigation.navigate('PayU')}
               style={{ fontSize: moderateScale(13) }}
             />
             <Cards
