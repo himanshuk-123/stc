@@ -1,17 +1,21 @@
-import { View, Text, SafeAreaView,StyleSheet,Alert } from 'react-native'
-import React from 'react'
-import Header from '../component/Header'
-import Cards from '../component/cards'
-import Upi_icon from '../../assets/payUpi.png'
-import add_money from '../../assets/add_money.png'
-import GradientLayout from '../component/GradientLayout'
-import { horizontalScale, verticalScale } from '../utils/responsive';
+import { View, Text, SafeAreaView, StyleSheet, Alert } from 'react-native';
+import React from 'react';
+import Header from '../component/Header';
+import Cards from '../component/cards';
+import Upi_icon from '../../assets/payUpi.png';
+import add_money from '../../assets/add_money.png';
+import GradientLayout from '../component/GradientLayout';
+import {
+  horizontalScale,
+  moderateScale,
+  verticalScale,
+} from '../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
-import scanner from '../../assets/scanner.png'
-import paymentRequest from '../../assets/requestMoney.webp'
+import scanner from '../../assets/scanner.png';
+import paymentRequest from '../../assets/requestMoney.webp';
 const AddMoneyScreen = () => {
   const navigation = useNavigation();
-  const cardHeight = verticalScale(120);
+  const cardHeight = verticalScale(90);
   const cardWidth = '48%';
 
   return (
@@ -23,8 +27,8 @@ const AddMoneyScreen = () => {
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
-              height: verticalScale(140),
-              marginBottom: verticalScale(15)
+              height: verticalScale(130),
+              // marginBottom: verticalScale(15),
             }}
           >
             <Cards
@@ -33,10 +37,11 @@ const AddMoneyScreen = () => {
               gradientColors={['#ffffff', '#ffffff']}
               height={cardHeight}
               width={cardWidth}
-              imgheight={verticalScale(70)}
-              imgwidth={horizontalScale(70)} 
-              onPress={()=>Alert.alert('Coming Soon')}
-              />
+              imgheight={verticalScale(30)}
+              imgwidth={horizontalScale(70)}
+              onPress={() => Alert.alert('Coming Soon')}
+              style={{ fontSize: moderateScale(13) }}
+            />
             <Cards
               showIcon={true}
               imageSource={scanner}
@@ -44,26 +49,32 @@ const AddMoneyScreen = () => {
               gradientColors={['#ffffff', '#ffffff']}
               height={cardHeight}
               width={cardWidth}
-              imgheight={verticalScale(70)}
+              imgheight={verticalScale(30)}
               imgwidth={horizontalScale(70)}
               onPress={() => navigation.navigate('QrScanner')}
+              style={{ fontSize: moderateScale(13) }}
             />
           </View>
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            height: verticalScale(140),
-            marginBottom: verticalScale(15)
-          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              // height: verticalScale(140),
+              // marginBottom: verticalScale(15),
+            }}
+          >
             <Cards
               imageSource={add_money}
               title="Wallet to Wallet"
               gradientColors={['#ffffff', '#ffffff']}
               height={cardHeight}
               width={cardWidth}
-              imgheight={verticalScale(70)}
+              imgheight={verticalScale(30)}
               imgwidth={horizontalScale(70)}
-              onPress={() => navigation.navigate('WalletPayment',{scannedNumber:null})}
+              onPress={() =>
+                navigation.navigate('WalletPayment', { scannedNumber: null })
+              }
+              style={{ fontSize: moderateScale(13) }}
             />
             <Cards
               imageSource={paymentRequest}
@@ -71,23 +82,24 @@ const AddMoneyScreen = () => {
               gradientColors={['#ffffff', '#ffffff']}
               height={cardHeight}
               width={cardWidth}
-              imgheight={verticalScale(70)}
+              imgheight={verticalScale(30)}
               imgwidth={horizontalScale(70)}
               onPress={() => navigation.navigate('PaymentRequest')}
+              style={{ fontSize: moderateScale(13) }}
             />
           </View>
         </View>
       </SafeAreaView>
     </GradientLayout>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 16,
-  } 
+  },
 });
 
-export default AddMoneyScreen
+export default AddMoneyScreen;

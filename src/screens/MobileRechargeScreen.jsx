@@ -111,6 +111,8 @@ const MobileRechargeScreen = () => {
   
 
   const onPhoneSubmit = async (number) => {
+    setLoading(true);
+    console.log("Fetching operator for number:", number);
     try {
       const response = await axios.get(`https://onlinerechargeservice.in/Api/Plan/FetchOperator?TokenId=da9c3bba-770c-4034-af9e-20e4959b26f2&Number=${number}`);
       console.log("Response:", response.data);
@@ -122,7 +124,7 @@ const MobileRechargeScreen = () => {
       console.log("Operator Code:", operatorCode);
       const operator = services.find(item => item.name.toLowerCase() === operatorName.toLowerCase());
       if (!operator) {
-        Alert.alert("Operator not found for name:", operatorName);
+        Alert.alert(`This number is not a valid number `);
         return;
       }
       // Ab tum yahan API ya state update kar sakte ho
@@ -130,6 +132,8 @@ const MobileRechargeScreen = () => {
       setPhoneNumber('');
     } catch (error) {
       console.log("Error:", error);
+    }finally {
+      setLoading(false);
     }
   };
   

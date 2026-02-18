@@ -18,6 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import RNQRGenerator from 'rn-qr-generator';
 import galleryIcon from '../../assets/gallery.png'; // Replace with your path
+import Header from '../component/Header';
 
 const QRScannerScreen   = () => {
   const [scanned, setScanned] = useState(false);
@@ -101,14 +102,17 @@ const QRScannerScreen   = () => {
     <View style={styles.container}>
       {isCameraActive && (
         <Camera
-          style={StyleSheet.absoluteFill}
-          device={device}
-          isActive={isCameraActive}
-          codeScanner={codeScanner}
-          enableFrameProcessor={false}
+        style={StyleSheet.absoluteFill}
+        device={device}
+        isActive={isCameraActive}
+        codeScanner={codeScanner}
+        enableFrameProcessor={false}
         />
       )}
 
+      <View style={{padding:16, backgroundColor:'transparent', position:'absolute', top:0, left:0, right:0  }}>
+      <Header headingTitle="Qr Scanner"/>
+      </View>
       <View style={styles.overlay}>
         <Text style={styles.instruction}>Align QR Code within frame</Text>
 

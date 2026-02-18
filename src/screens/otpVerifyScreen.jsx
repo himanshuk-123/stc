@@ -14,7 +14,7 @@ import {
   import live_chat from '../../assets/live_chat.png';
   import talk_to_us from '../../assets/talk_to_us.png';
   import { useNavigation } from '@react-navigation/native';
-  import CustomButton from '../component/button';
+  import CustomButton from '../component/button'    ;
   import GradientLayout from '../component/GradientLayout';
   import Header from '../component/Header';   
 import RegisterService from '../services/registerService';
@@ -23,7 +23,7 @@ import RegisterService from '../services/registerService';
     const {object,id} = route.params;
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
-  
+    const navigation = useNavigation();
     const handleChangePassword = async () => {
          setLoading(true);
       try {
@@ -58,6 +58,7 @@ import RegisterService from '../services/registerService';
         console.log("himanshu response: ",response.data);
         if(response.data.Error === "0"){
           Alert.alert('Success', response.data.Message);
+          navigation.replace('Login');
         }else{
           Alert.alert('Error', response.data.Message);
         }
@@ -69,10 +70,10 @@ import RegisterService from '../services/registerService';
       }
     };
   
-    useEffect(() => {
-      console.log("himanshu payload: ",object);
-      console.log("himanshu id: ",id);  
-    }, []);
+    // useEffect(() => {
+    //   console.log("himanshu payload: ",object);
+    //   console.log("himanshu id: ",id);  
+    // }, []);
 
     return (
       <GradientLayout>

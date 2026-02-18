@@ -4,13 +4,13 @@ import { View, Text, Link, SafeAreaView, TextInput, Image, ScrollView, Alert, Ac
 import Header from '../component/Header';
 import GradientLayout from '../component/GradientLayout';
 import CustomButton from '../component/button';
-import contact from '../../assets/contact.jpeg'
+import contact from '../../assets/contact.jpeg';
 import { useNavigation } from '@react-navigation/native';
 import { PlanService } from '../services/PlanService';
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleRecharge as rechargeApiCall } from '../component/Commonfunction';
-import phone from '../../assets/phone_icon.png'
+import phone from '../../assets/phone_icon.png';
+import MessageModal from '../modals/SuccessModal';
 const CompanyRechargeScreen = ({ route }) => {
     const { operator, mode, opcodenew, number, price, headingTitle, screenName } = route.params;
     const [MobileNo, setMobileNo] = useState(operator.MobileNO ? operator.MobileNO : number || '');
@@ -28,6 +28,9 @@ const CompanyRechargeScreen = ({ route }) => {
             District: "",
         }
     });
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
+    const [successModalType, setSuccessModalType] = useState('success');
+    const [successModalMessage, setSuccessModalMessage] = useState('');
     const navigation = useNavigation();
     const userData = useSelector(state => state.user);
 
@@ -184,17 +187,33 @@ const CompanyRechargeScreen = ({ route }) => {
                     opcodenew: opcodenew ? opcodenew : operator.OpTypeId,
                 });
             } else {
-                await rechargeApiCall({ userData, MobileNo, opcodenew: opcodenew ? opcodenew : operator.OpTypeId, Amount, navigation, setLoading, setError });
+                const result = await rechargeApiCall({ userData, MobileNo, opcodenew: opcodenew ? opcodenew : operator.OpTypeId, Amount, navigation, setLoading, setError });
+                if (result && result.success) {
+                    setShowConfirmationModal(false);
+                    setSuccessModalType('success');
+                    setSuccessModalMessage(`Recharge of ₹${Amount} for ${MobileNo} was successful!`);
+                    setSuccessModalVisible(true);
+                    // Reset fields after successful recharge
+                    setTimeout(() => {
+                        setAmount('');
+                    }, 3000);
+                } else {
+                    setSuccessModalType('error');
+                    setSuccessModalMessage(result?.message || 'Recharge failed. Please try again.');
+                    setSuccessModalVisible(true);
+                }
             }
-        } catch (error) {
+        } catch (err) {
             setLoading(false);
-            Alert.alert('Error', 'Something went wrong.');
+            setSuccessModalType('error');
+            setSuccessModalMessage('Something went wrong. Please try again.');
+            setSuccessModalVisible(true);
         }
     };
 
     const specialOffers = () => {
         if (MobileNo) {
-            navigation.replace('SpecialOffers', { opcodenew: opcodenew ? opcodenew : operator.OpTypeId, number: MobileNo, operator: operator, mode: mode });
+            navigation.navigate('SpecialOffers', { opcodenew: opcodenew ? opcodenew : operator.OpTypeId, number: MobileNo, operator: operator, mode: mode });
         } else {
             Alert.alert('Please enter a valid mobile number');
         }
@@ -427,6 +446,15 @@ const CompanyRechargeScreen = ({ route }) => {
                         </View>
                     </View>
                 </Modal>
+                
+                {/* Success/Error Message Modal */}
+                <MessageModal
+                    visible={successModalVisible}
+                    type={successModalType}
+                    message={successModalMessage}
+                    onClose={() => setSuccessModalVisible(false)}
+                    onButtonPress={()=>navigation.goBack()}
+                />
             </SafeAreaView>
         </GradientLayout>
     );
@@ -553,7 +581,7 @@ const styles = StyleSheet.create({
         marginTop: 16
     },
     noteText: {
-        color: '#666',
+        color: '#faf9f9ff',
         fontWeight: 'bold',
         fontSize: 14
     },

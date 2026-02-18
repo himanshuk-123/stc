@@ -87,7 +87,7 @@ const ForgetPasswordScreen = () => {
         setShowOtp(true);
         navigation.navigate('OtpVerify', {
           MobileNo: phone,
-          Version: Constants?.expoConfig?.version?.split('.')[0],
+          Version: "1",
           IP: "",
           Location: null,
         });

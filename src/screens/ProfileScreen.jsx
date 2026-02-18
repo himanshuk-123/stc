@@ -127,7 +127,14 @@ const ProfileScreen = () => {
         paddingTop: verticalScale(16)
       }}>
         <ScrollView style={{ marginBottom: verticalScale(10) }}>
+          <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:verticalScale(10)}}>
           <Header />
+          <View>
+            <TouchableOpacity onPress={()=>navigation.navigate('QrCode')}>
+          <Image source={qr} style={{width:34,height:34}} />
+          </TouchableOpacity>
+          </View>
+          </View>
           <View style={styles.profileImageContainer}>
             <View style={styles.imageWrapper}>
               <Image
@@ -143,7 +150,7 @@ const ProfileScreen = () => {
             <Text style={styles.email}>{userData.email}</Text>
           </View>
 
-          <View style={styles.qrToggleContainer}>
+          {/* <View style={styles.qrToggleContainer}>
             <TouchableOpacity onPress={() => setShowqr(!showqr)} style={styles.qrButton}>
              <Image source={qr} style={{width:34,height:34}} />
               <Text style={styles.qrButtonText}>{showqr ? 'Hide QR Code' : 'Show QR Code'}</Text>
@@ -154,7 +161,7 @@ const ProfileScreen = () => {
             <View style={styles.qrCodeContainer}>
               <GeneratQrCode mobileNumber={userData.mobilenumber} userName={userData.shopname} />
             </View>
-          )}
+          )} */}
 
           <FlatList
             data={features}

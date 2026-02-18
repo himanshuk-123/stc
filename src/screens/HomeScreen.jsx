@@ -21,9 +21,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import burger from '../../assets/burger-icon.jpg';
 import notification from '../../assets/notification.png'  
 import wallet from '../../assets/wallet.png'
+import userService from '../services/UserService'
+import UserService from '../services/UserService';
 const HomeScreen = () => {
   const navigation = useNavigation();
-  const isFocused = useIsFocused();
   // Use custom Redux hooks
   const dispatch = useAppDispatch();
   const userData = useAppSelector((state) => state.user);
@@ -33,7 +34,6 @@ const HomeScreen = () => {
   const [showBalanceModal, setShowBalanceModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-  const [amount,setAmount] = useState(0);
 
   const [dashboardData, setDashboardData] = useState({
     closingBalance: '',
@@ -71,6 +71,7 @@ const HomeScreen = () => {
     setIsLoading(false);
     setRefreshing(false);
   };
+
   useEffect(() => {  
     fetchDashboard();
   }, []);
@@ -82,8 +83,49 @@ const HomeScreen = () => {
     loadKeys();
   }, []);
 
-  const balanceCheck = () => {
-    setShowBalanceModal(true);
+  const [isBalanceLoading, setIsBalanceLoading] = useState(false);
+  
+  const balanceCheck = async() => {
+    setIsBalanceLoading(true);
+    const payload = {
+      Tokenid: userData.tokenid,
+      Version: Platform.OS === "android" ? Platform.Version.toString() : "1",
+      Location: userData.location
+    };  
+    try{
+      console.log(payload);
+      const response = await UserService.BalanceCheck(
+        payload.Tokenid,
+        payload.Version,
+        payload.Location
+      );
+      console.log("Balance Check Response: ", response.data);
+      
+      if (response.data && response.data.WBalance !== undefined) {
+        // Update Redux state with fresh data
+        dispatch(saveUserData({
+          closingbalance: response.data.WBalance,
+          standingbalance: response.data.OutStandingBalance
+        }));
+
+        // Update local state with fresh data
+        setDashboardData({
+          closingBalance: response.data.WBalance,
+          standingBalance: response.data.OutStandingBalance,
+          notification: dashboardData.notification // preserve notification
+        });
+        
+        // Only show modal after data is refreshed
+        setShowBalanceModal(true);
+      } else {
+        Alert.alert('Error', 'Unable to fetch balance data');
+      }
+    } catch(error) {
+      console.log(error);
+      Alert.alert('Error', 'Failed to check balance');
+    } finally {
+      setIsBalanceLoading(false);
+    }
   };
 
   const handleErrorModalOk = () => {
@@ -185,11 +227,11 @@ const HomeScreen = () => {
 
                 <Text style={styles.balanceTitle}>Your Current Balance</Text>
                 <Text style={styles.balanceAmount}>
-                  ₹ {userData.closingbalance ? parseFloat(userData.closingbalance) : '0.00'}
+                  ₹ {userData.closingbalance ? parseFloat(userData.closingbalance).toFixed(2) : '0.00'}
                 </Text>
                 <Text style={styles.balanceTitle}>Your Outstanding Balance</Text>
                 <Text style={{color:'red',fontSize:30,fontWeight:'bold'}}>
-                  ₹ {userData.standingbalance ? parseInt(userData.standingbalance) : '0.00'}
+                  ₹ {userData.standingbalance ? parseFloat(userData.standingbalance).toFixed(2) : '0.00'}
                 </Text>
 
                 <TouchableOpacity
@@ -201,6 +243,21 @@ const HomeScreen = () => {
               </View>
             </View>
           </TouchableOpacity>
+        </Modal>
+        
+        {/* Balance Loading Indicator */}
+        <Modal
+          visible={isBalanceLoading}
+          transparent={true}
+          animationType="fade"
+          statusBarTranslucent={true}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.balanceModalContent, styles.loadingContent]}>
+              <ActivityIndicator size="large" color="#3b82f6" />
+              <Text style={styles.loadingText}>Fetching latest balance...</Text>
+            </View>
+          </View>
         </Modal>
 
         <ScrollView 
@@ -259,28 +316,28 @@ const HomeScreen = () => {
               imageSource={add_money}
               title="Add Money"
               width="48%"
-              height="90%"
-              imgheight={verticalScale(70)}
+              height="100%"
+              imgheight={verticalScale(50)}
               imgwidth={horizontalScale(70)}
               gradientColors={['#d48ced', '#913dad']}
               onPress={() => navigation.navigate('AddMoney')}
               textColor='#fff'
               fontWeight='400'
-              style={{ fontSize: moderateScale(14) }}
+              style={{ fontSize: moderateScale(13) }}
               cardsPerRow={2}
             />
             <Cards
               imageSource={mobile_recharge_icon}
               title="Recharges"
               width="48%"
-              height="90%"
-              imgheight={verticalScale(70)}
+              height="100%"
+              imgheight={verticalScale(50)}
               imgwidth={horizontalScale(70)}
               gradientColors={['#f5d3a6', '#cf7a0a']}
               onPress={() => navigation.navigate('Recharge')}
               textColor='#fff'
               fontWeight='400'
-              style={{ fontSize: moderateScale(14) }}
+              style={{ fontSize: moderateScale(13) }}
               cardsPerRow={2}
             />
           </View>
@@ -291,27 +348,27 @@ const HomeScreen = () => {
               imageSource={live_chat}
               title="Chat with us"
               width="31%"
-              height="100%"
-              imgheight={verticalScale(50)}
+              height="80%"
+              imgheight={verticalScale(40)}
               imgwidth={horizontalScale(50)}
               gradientColors={['#f2e29b', '#cfb546']}
               onPress={() => Alert.alert('Chat', 'Chat feature coming soon')}
               textColor='#fff'
               fontWeight='400'
-              style={{ fontSize: moderateScale(14) }}
+              style={{ fontSize: moderateScale(12) }}
               cardsPerRow={3}
             />
             <Cards
               imageSource={talk_to_us}
               title="Talk to us"
               width="31%"
-              height="100%"
-              imgheight={verticalScale(50)}
+              height="80%"
+              imgheight={verticalScale(40)}
               imgwidth={horizontalScale(50)}
               gradientColors={['#fca9c9', '#c94b7b']}
               textColor='#fff'
               fontWeight='400'
-              style={{ fontSize: moderateScale(14) }}
+              style={{ fontSize: moderateScale(12) }}
               cardsPerRow={3}
               onPress={handleCallPress}
             />
@@ -319,30 +376,35 @@ const HomeScreen = () => {
               imageSource={reports_icon}
               title="Reports"
               width="31%"
-              height="100%"
-              imgheight={verticalScale(50)}
+              height="80%"
+              imgheight={verticalScale(40)}
               imgwidth={horizontalScale(50)}
               gradientColors={['#defcff', '#3cb5d6']}
               onPress={() => navigation.navigate('Reports')}
               textColor='#fff'
               fontWeight='400'
-              style={{ fontSize: moderateScale(14) }}
+              style={{ fontSize: moderateScale(12) }}
               cardsPerRow={3}
             />
           </View>
 
           {/* Logo */}
-          <View style={styles.logoContainer}>
+          {/* <View style={styles.logoContainer}>
             <Image
               source={logo}
               style={styles.logo}
             />
-          </View>
+          </View> */}
 
           {/* 2 CustomButtons */}
           <View style={styles.buttonContainer}>
             <CustomButton width={'48%'} title="Cash Back" onPress={() => Alert.alert('Cashback', 'Cashback feature coming soon')} />
-            <CustomButton width={'48%'} title="Check Balance" onPress={balanceCheck} />
+            <CustomButton 
+              width={'48%'} 
+              title={isBalanceLoading ? "Loading..." : "Check Balance"} 
+              onPress={balanceCheck} 
+              disabled={isBalanceLoading} 
+            />
           </View>
           {
             userData.usertype === 'Distributer' && <CustomButton title="Wallet Topup" onPress={() => navigation.navigate('WalletTopup',{userId: ''})} />
@@ -426,7 +488,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 24,
-    color: 'green'
+    color: '#063d12ff'
   },
   balanceModalButton: {
     backgroundColor: '#3b82f6',
@@ -492,24 +554,23 @@ const styles = StyleSheet.create({
   notificationText: {
     color: '#854d0e',
     fontWeight: '500',
-  },
-  
-  
+  },  
   twoCardsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    height: verticalScale(140),
-    marginBottom: verticalScale(15)
+    height: verticalScale(100),
+    marginBottom: verticalScale(15),
+    marginTop: verticalScale(10)
   },
   threeCardsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     height: verticalScale(110),
-    marginBottom: verticalScale(15)
+    // marginBottom: verticalScale(15)
   },
   logoContainer: {
     alignItems: 'center',
-    marginVertical: verticalScale(10)
+        // marginVertical: verticalScale(10)
   },
   logo: {
     width: horizontalScale(75),
@@ -520,6 +581,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: verticalScale(24)
+  },
+  loadingContent: {
+    padding: 30,
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500'
   }
 });
 

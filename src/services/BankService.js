@@ -5,19 +5,17 @@ const BankService = {
         api.post('/Support',{
             Tokenid,Version,Location
         }),
-    Support:(Tokenid,Version,Location)=>
-        api.post('/Support',{
-            Tokenid,Version,Location
-        }),
     BankList:(Tokenid,Version,Location)=>
         api.post('/BankDetails',{
             Tokenid,Version,Location
         }),
-    PaymentRequest:(Tokenid,RequestTo,Amount,SecAmt,Mode,Bankid,WalletType,RefrenceNo,Remark,Response,Version,Location)=>
-        api.post('/WalletRequest',{
-            Tokenid,RequestTo,Amount,SecAmt,Mode,Bankid,WalletType,RefrenceNo,Remark,Response,Version,Location
-        }),
-
+    PaymentRequest:(payload)=>
+        api.post('/WalletRequest',payload),
+     
+    WalletRequestStatusCheck:(Tokenid,WalletID,Version)=>
+        api.post('/WalletRequestStatusCheck',{
+            Tokenid,WalletID,Version
+        })
 }
 
 export default BankService;

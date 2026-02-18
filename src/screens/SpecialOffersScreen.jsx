@@ -105,6 +105,7 @@ import {
               renderItem={renderItem}
               keyExtractor={(_, index) => index.toString()}
               showsVerticalScrollIndicator={false}
+              marginBottom={verticalScale(50)}
             />
           </View>
         </SafeAreaView>

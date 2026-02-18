@@ -5,7 +5,7 @@ import Cards from '../component/cards';
 import mobile_recharge from '../../assets/mobile_recharge.png';
 import dth_recharge from '../../assets/dth_Recharge.webp';
 import GradientLayout from '../component/GradientLayout';
-import { horizontalScale, verticalScale } from '../utils/responsive';
+import { horizontalScale, moderateScale, verticalScale } from '../utils/responsive';
   
 const DATA = [
   { id: '1', title: 'Mobile Recharge', image: mobile_recharge, navigateTo:'MobileRecharge' },
@@ -14,7 +14,7 @@ const DATA = [
 
 const RechargeScreen = () => {
   // Calculate responsive dimensions
-  const cardHeight = verticalScale(130);
+  const cardHeight = verticalScale(90);
   const cardWidth = "48%";
 
   return (
@@ -38,11 +38,12 @@ const RechargeScreen = () => {
               title={item.title}
               height={cardHeight}
               width={cardWidth}
-              imgheight={verticalScale(60)}
+              imgheight={verticalScale(35)}
               imgwidth={horizontalScale(60)} 
               gradientColors={['#ffffff', '#ffffff']}
               navigateTo={item.navigateTo}
               cardsPerRow={2}
+              style={{ fontSize: moderateScale(13) }}
             />
           )}
         />

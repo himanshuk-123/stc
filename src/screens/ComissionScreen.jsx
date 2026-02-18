@@ -169,13 +169,13 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         borderTopWidth: 1,
         borderBottomWidth: 1,
-        borderColor: '#d1d5db',
+        borderColor: '#131314ff',
         paddingVertical: 8,
         marginBottom: 8
     },
     headerText: {
         fontWeight: '600',
-        color: '#fff',
+        color: '#0e0d0dff',
     },
     emptyText: {
         textAlign: 'center',

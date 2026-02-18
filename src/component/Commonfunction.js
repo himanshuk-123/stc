@@ -42,7 +42,6 @@ export const dashboardHome = async ({ userData }) => {
 export const handleRecharge = async ({ userData, MobileNo, opcodenew, Amount, navigation, setLoading, setError, pin='0000' }) => {
   setLoading(true);
 
-
   const payload = {
       Token: userData.tokenid,
       UserID: null,
@@ -88,19 +87,35 @@ export const handleRecharge = async ({ userData, MobileNo, opcodenew, Amount, na
           payload.Location,
       )
       console.log(response.data);
-      Alert.alert(
-          response.data.STATUS,
-          response.data.MESSAGE,
-          [
-              {
-                  text: 'OK',
-                  onPress: () => navigation.goBack()
-              }
-          ]
-      );
+      
+      // Still show the alert for backward compatibility
+      // Alert.alert(
+      //     response.data.STATUS,
+      //     response.data.MESSAGE,
+      //     [
+      //         {
+      //             text: 'OK',
+      //             onPress: () => navigation.goBack()
+      //         }
+      //     ]
+      // );
+      
+      // Return the result for use with success/error modal
+      return {
+          success: response.data.STATUS === "SUCCESS",
+          message: response.data.MESSAGE,
+          data: response.data
+      };
   } catch (error) {
       console.error('Error during recharge:', error);
       setError('An error occurred while processing the recharge. Please try again.');
+      
+      // Return error for use with error modal
+      return {
+          success: false,
+          message: 'An error occurred while processing the recharge. Please try again.',
+          error: error
+      };
   } finally {
       setLoading(false);
   }

@@ -4,7 +4,6 @@ import {
   SafeAreaView,
   TextInput,
   TouchableOpacity,
-  Alert,
   Modal,
   ActivityIndicator,
   StyleSheet,
@@ -21,6 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 import { logout } from '../utils/authUtils';
 import CustomButton from '../component/button';
 import phone from '../../assets/phone_icon.png'
+import MessageModal from '../modals/SuccessModal';
 
 const WalletPaymentScreen = ({ route }) => {
   const { scannedNumber } = route.params || {};
@@ -34,6 +34,9 @@ const WalletPaymentScreen = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [userFound, setUserFound] = useState(!!scannedNumber); // ✅
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [modalType, setModalType] = useState('success');
   const userData = useSelector((state) => state.user);
 
   const fetchUserData = async () => {
@@ -76,7 +79,9 @@ const WalletPaymentScreen = ({ route }) => {
 
   const handleSubmit = async () => {
     if (!amount || !remark) {
-      Alert.alert('Error', 'Please enter an amount and remark');
+      setModalType('error');
+      setSuccessMessage('Please enter an amount and remark');
+      setShowSuccessModal(true);
       return;
     }
     setPaymentLoading(true);
@@ -101,23 +106,13 @@ const WalletPaymentScreen = ({ route }) => {
 
     console.log(response.data);
     if (response.data.Error === '0') {
-      Alert.alert('Success', response.data.Message, [
-        {
-          text: 'OK',
-          onPress: () => {
-            navigation.navigate('MainTabs');
-          },
-        },
-      ]);
+      setModalType('success');
+      setSuccessMessage(response.data.Message);
+      setShowSuccessModal(true);
     } else {
-      Alert.alert('Error', response.data.Message,[
-        {
-          text: 'OK',
-          onPress: ()=>{
-            navigation.goBack();
-          }
-        }
-      ]);
+      setModalType('error');
+      setSuccessMessage(response.data.Message);
+      setShowSuccessModal(true);
     }
     setPaymentLoading(false);
   };
@@ -125,6 +120,15 @@ const WalletPaymentScreen = ({ route }) => {
   const handleErrorModalOk = () => {
     setShowErrorModal(false);
     logout();
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    if (modalType === 'success') {
+      navigation.navigate('MainTabs');
+    } else {
+      navigation.goBack();
+    }
   };
 
   const handleInputChange = (text) => {
@@ -170,6 +174,16 @@ const WalletPaymentScreen = ({ route }) => {
             </View>
           </View>
         </Modal>
+
+        <MessageModal
+          visible={showSuccessModal}
+          type={modalType}
+          title={modalType === 'success' ? 'Success' : 'Error'}
+          message={successMessage}
+          onClose={handleSuccessModalClose}
+          buttonText="OK"
+          onButtonPress={handleSuccessModalClose}
+        />
 
         <Header headingTitle="Wallet Transfer" />
 
@@ -236,6 +250,7 @@ const WalletPaymentScreen = ({ route }) => {
                   backgroundColor: 'white',
                   padding: 12,
                   borderRadius: 8,
+                  color: '#4a4a4a'
                 }}
                 inputMode="numeric"
                 maxLength={10}
@@ -253,6 +268,7 @@ const WalletPaymentScreen = ({ route }) => {
                   backgroundColor: 'white',
                   padding: 12,
                   borderRadius: 8,
+                  color: '#4a4a4a'
                 }}
                 inputMode="text"
                 placeholderTextColor="gray"

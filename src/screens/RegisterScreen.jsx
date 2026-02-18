@@ -1,4 +1,4 @@
-import {
+  import {
   View,
   Text,
   Image,
@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
-  ScrollView
+  ScrollView,
+  Platform
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -57,9 +58,38 @@ const RegisterScreen = () => {
     fetchStates();
   }, []);
 
-  const handleRegister = async () => {
-    setLoading(true);
+  const validate = () => {
+    if (!phone || phone.length !== 10 || !/^\d{10}$/.test(phone)) {
+      Alert.alert("Invalid Input", "Please enter a valid 10-digit mobile number.");
+      return false;
+    }
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      Alert.alert("Invalid Input", "Please enter a valid email address.");
+      return false;
+    }
+    if (!selectedStateId) {
+      Alert.alert("Invalid Input", "Please select a state.");
+      return false;
+    }
+    if (!pincode || pincode.length !== 6 || !/^\d{6}$/.test(pincode)) {
+      Alert.alert("Invalid Input", "Please enter a valid 6-digit pincode.");
+      return false;
+    }
+    if (!name) {
+      Alert.alert("Invalid Input", "Please enter your name.");
+      return false;
+    }
+    if (!address) {
+      Alert.alert("Invalid Input", "Please enter your address.");
+      return false;
+    }
+    return true;
+  };
 
+  const handleRegister = async () => {
+    if (!validate()) return;
+    setLoading(true);
+    const osVersion = Platform.OS === "android" ?  Platform.Version.toString() : "1";
     try {
       const payload = {
         MobileNo: phone,
@@ -70,7 +100,7 @@ const RegisterScreen = () => {
         Address: address,
         MobileOTP: "",
         MailOTP: "",
-        Version: "1",
+        Version: osVersion,
         Location: null,
       };
 
@@ -90,7 +120,12 @@ const RegisterScreen = () => {
       );
 
       console.log("Register Response:", response.data);
+      if(response.data.Error === '0'){
       navigation.navigate('OtpVerify', {object: payload,id: response.data.Time});
+      }
+      else{
+        Alert.alert("Error",response.data.Message);
+      }
     } catch (error) {
       console.error(
         "Himanshu bhai ka error: ",

@@ -11,6 +11,8 @@ import QRCode from 'react-native-qrcode-svg';
 import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
 import { horizontalScale } from '../utils/responsive';
+import GradientLayout from './GradientLayout';
+import Header from './Header';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -33,6 +35,10 @@ const GeneratQrCode = ({ mobileNumber, userName}) => {
   };
 
   return (
+    <GradientLayout>
+      <View style={{paddingHorizontal:16, paddingTop:16}}>
+      <Header headingTitle="My QR Code" screenName="Profile" />
+      </View>
     <View style={styles.container}>
       <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1 }}>
         <View style={styles.qrWrapper}>
@@ -63,6 +69,7 @@ const GeneratQrCode = ({ mobileNumber, userName}) => {
         <Button title='Share Qr Code'  onPress={handleShare}/>
       </View>
     </View>
+    </GradientLayout>
   );
 };
 
@@ -70,9 +77,11 @@ export default GeneratQrCode;
 
 const styles = StyleSheet.create({
   container: {
+    justifyContent:'center',
     alignItems: 'center',
     marginTop: 30,
     padding: 16,
+    flex: 1,
   },
   qrWrapper: {
     backgroundColor: '#fff',

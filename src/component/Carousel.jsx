@@ -71,7 +71,7 @@ const CarouselComponent = ({ width, height }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 16,
+    marginVertical: 0,
   },
   image: {
     width: '100%',
