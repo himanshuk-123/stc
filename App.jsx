@@ -1,5 +1,5 @@
 import { SafeAreaView, StatusBar, View, Platform } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import LinearGradient from 'react-native-linear-gradient'
 import { Provider } from 'react-redux'
 import store from './src/redux/store'
@@ -7,6 +7,7 @@ import RootNavigator from './src/navigation/RootNavigator'
 import { setupNotifications } from './src/utils/notificationService'
 import notifee, { EventType } from '@notifee/react-native'
 import Toast from 'react-native-toast-message'
+import NetInfo from '@react-native-community/netinfo'
 import { setupAxiosInterceptors } from './src/utils/axiosConfig'
 // Import background handler to ensure it's included in the bundle
 import './src/utils/notificationBackgroundHandler'
@@ -14,9 +15,29 @@ import { markNotificationAsRead } from './src/utils/notificationStorage'
 
 
 const App = () => {
+  const wasOnlineRef = useRef(true);
+
   useEffect(() => {
     // Setup global axios interceptors for network error handling
     setupAxiosInterceptors();
+
+    const unsubscribeNetInfo = NetInfo.addEventListener((state) => {
+      const isConnected = state.isConnected === true;
+      const isInternetReachable = state.isInternetReachable !== false;
+      const isOnline = isConnected && isInternetReachable;
+
+      if (wasOnlineRef.current && !isOnline) {
+        Toast.show({
+          type: 'error',
+          text1: 'No Internet Connection',
+          text2: 'Please check your network and try again',
+          position: 'bottom',
+          visibilityTime: 3000,
+        });
+      }
+
+      wasOnlineRef.current = isOnline;
+    });
     
     // Initialize Notifee foreground handler
     const unsubscribeNotifee = notifee.onForegroundEvent(({ type, detail }) => {
@@ -45,6 +66,7 @@ const App = () => {
       if (typeof unsubscribe === 'function') {
         unsubscribe();
       }
+      unsubscribeNetInfo();
       unsubscribeNotifee();
     };
   }, []);

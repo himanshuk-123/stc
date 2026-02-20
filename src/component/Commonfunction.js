@@ -32,8 +32,22 @@ export const dashboardHome = async ({ userData }) => {
     };
   } catch (error) {
     console.error('Dashboard data fetch error:', error);
+    const isNetworkError =
+      error?.code === 'ERR_NETWORK' ||
+      error?.message === 'Network Error' ||
+      error?.message?.includes('Network') ||
+      !error?.response;
+
+    if (isNetworkError) {
+      return {
+        success: false,
+        networkError: true,
+        errorMessage: '',
+      };
+    }
     return {
       success: false,
+      networkError: false,
       errorMessage: 'Failed to fetch dashboard data. Please login again.',
     };
   }

@@ -65,8 +65,10 @@ const HomeScreen = () => {
         notification,
       });
     } else {
-      setErrorMessage(result.errorMessage);
-      setShowErrorModal(true);
+      if (!result.networkError) {
+        setErrorMessage(result.errorMessage);
+        setShowErrorModal(true);
+      }
     }
     setIsLoading(false);
     setRefreshing(false);
