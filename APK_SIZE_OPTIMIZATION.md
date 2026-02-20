@@ -86,7 +86,7 @@ Output: `app/build/outputs/bundle/release/app-release.aab`
    - Consider removing: `react-native-share`, `react-native-html-to-pdf`, etc. if not used
 
 4. **Enable Network Link Time Optimization**
-   - Add to `build.gradle` release block:
+   - Add to `build.gradle` release  block:
    ```gradle
    lto true
    ```

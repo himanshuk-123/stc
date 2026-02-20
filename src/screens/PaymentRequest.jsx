@@ -160,7 +160,6 @@ const PaymentScreen = () => {
       Version: Platform.Version.toString(),
       Location: userData.Location
     }
-    console.log("himanshu bhai ki jai")
     try {
       const response = await BankService.PaymentRequest(payload);
       console.log(payload)
