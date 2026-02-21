@@ -19,7 +19,7 @@ export const dashboardHome = async ({ userData }) => {
       payload.Location
     );
 
-    const { ClosingBalance, StandingBalance, Notification, STATUSCODE, MESSAGE } = response.data;
+    const { ClosingBalance, StandingBalance, Notification, STATUSCODE, MESSAGE,Commission } = response.data;
 
     return {
       success: STATUSCODE === "1",
@@ -27,6 +27,7 @@ export const dashboardHome = async ({ userData }) => {
         closingBalance: ClosingBalance,
         standingBalance: StandingBalance,
         notification: Notification || '',
+        commission: Commission || 0,
       },
       errorMessage: MESSAGE || '',
     };

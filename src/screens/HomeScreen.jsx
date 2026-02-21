@@ -39,6 +39,7 @@ const HomeScreen = () => {
     closingBalance: '',
     standingBalance: '',
     notification: '',
+    commission: '0',
   });
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -50,11 +51,12 @@ const HomeScreen = () => {
     const result = await dashboardHome({ userData });
 
     if (result.success) {
-      const { closingBalance, standingBalance, notification } = result.data;
+      const { closingBalance, standingBalance, notification, commission } = result.data;
 
       dispatch(saveUserData({
         closingbalance: closingBalance,
         standingbalance: standingBalance,
+        commission: commission,
         version: '1',
         location: userData.location,
       }));
@@ -63,6 +65,7 @@ const HomeScreen = () => {
         closingBalance,
         standingBalance,
         notification,
+        commission,
       });
     } else {
       if (!result.networkError) {
@@ -107,14 +110,16 @@ const HomeScreen = () => {
         // Update Redux state with fresh data
         dispatch(saveUserData({
           closingbalance: response.data.WBalance,
-          standingbalance: response.data.OutStandingBalance
+          standingbalance: response.data.OutStandingBalance,
+          commission: response.data.Commission || 0
         }));
 
         // Update local state with fresh data
         setDashboardData({
           closingBalance: response.data.WBalance,
           standingBalance: response.data.OutStandingBalance,
-          notification: dashboardData.notification // preserve notification
+          notification: dashboardData.notification, // preserve notification
+          commission: response.data.Commission || 0
         });
         
         // Only show modal after data is refreshed
@@ -235,6 +240,13 @@ const HomeScreen = () => {
                 <Text style={{color:'red',fontSize:30,fontWeight:'bold'}}>
                   ₹ {userData.standingbalance ? parseFloat(userData.standingbalance).toFixed(2) : '0.00'}
                 </Text>
+                
+                <View style={styles.commissionSection}>
+                  <Text style={styles.commissionLabel}>Total Commission Earned</Text>
+                  <Text style={styles.commissionAmount}>
+                    ₹ {userData.commission ? parseFloat(userData.commission).toFixed(2) : '0.00'}
+                  </Text>
+                </View>
 
                 <TouchableOpacity
                   style={styles.balanceModalButton}
@@ -279,11 +291,11 @@ const HomeScreen = () => {
             <View style={{flexDirection:'row',alignItems:'center',gap:10}}>
             <View style={styles.walletContainer}>
               <Image source={wallet} style={{ width: 20, height: 20 }} />
-              <Text style={{color:'#00e676',fontSize:18,fontWeight:'bold',paddingLeft:5}}>₹ {userData.closingbalance ? parseFloat(userData.closingbalance) : '0.00'}</Text>
+              <Text style={{color:'#00e676',fontSize:18,fontWeight:'bold',paddingLeft:5}}>₹ {userData.closingbalance ? parseFloat(userData.closingbalance).toFixed(2) : '0.00'}</Text>
             </View>
             <View style={[styles.walletContainer]}>
               <Image source={wallet} style={{ width: 20, height: 20 }} />
-              <Text style={{color:'#ff5252',fontSize:18,fontWeight:'bold',paddingLeft:5}}>₹ {userData.standingbalance ? parseInt(userData.standingbalance) : '0.00'}</Text>
+              <Text style={{color:'#ff5252',fontSize:18,fontWeight:'bold',paddingLeft:5}}>₹ {userData.standingbalance ? parseFloat(userData.standingbalance).toFixed(0) : '0.00'}</Text>
             </View>
             </View>
             {/* <View style={[styles.walletContainer,{marginTop:verticalScale(10),marginBottom:verticalScale(10)}]}>
@@ -303,14 +315,28 @@ const HomeScreen = () => {
           {dashboardData.notification && (
   <View style={styles.notificationWrapper}>
     <View style={styles.notificationContainer}>
-      <Text style={styles.notificationText}>
-        🔔 {dashboardData.notification}
-      </Text>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.notificationScrollContent}
+      >
+        <Text style={styles.notificationText}>
+          🔔 {dashboardData.notification}
+        </Text>
+      </ScrollView>
     </View>
   </View>
 )}
   
-
+          {/* Commission Banner */}
+          <View style={styles.commissionBanner}>
+            <View style={styles.commissionBannerContent}>
+              <Text style={styles.commissionBannerLabel}>💰 Your Total Commission</Text>
+              <Text style={styles.commissionBannerValue}>
+                ₹ {userData.commission ? parseFloat(userData.commission).toFixed(2) : '0.00'}
+              </Text>
+            </View>
+          </View>
 
           {/* Row of 2 Cards */}
           <View style={styles.twoCardsRow}>
@@ -562,7 +588,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     height: verticalScale(100),
     marginBottom: verticalScale(15),
-    marginTop: verticalScale(10)
   },
   threeCardsRow: {
     flexDirection: 'row',
@@ -595,6 +620,58 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: '500'
+  },
+  commissionSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    width: '100%',
+    alignItems: 'center'
+  },
+  commissionLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 8
+  },
+  commissionAmount: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ff9800'
+  },
+  commissionBanner: {
+    borderRadius: 12,
+    marginVertical: verticalScale(10),
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  commissionBannerContent: {
+    backgroundColor: '#9c27b0',
+    padding: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  commissionBannerLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff'
+  },
+  commissionBannerValue: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#ffd54f'
+  },
+  notificationScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8
   }
 });
 
