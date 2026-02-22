@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { loadUserData } from '../redux/slices/userSlice';
+import SplashScreen from '../screens/SplashScreen';
 
 // Import navigators
 import AuthNavigator from './AuthNavigator';
@@ -28,8 +29,8 @@ const RootNavigator = () => {
 
   if (!isBootstrapped) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+      <View style={{ flex: 1 }}>
+        <SplashScreen />
       </View>
     );
   }

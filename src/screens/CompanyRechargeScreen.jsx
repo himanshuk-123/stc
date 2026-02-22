@@ -188,15 +188,36 @@ const CompanyRechargeScreen = ({ route }) => {
                 });
             } else {
                 const result = await rechargeApiCall({ userData, MobileNo, opcodenew: opcodenew ? opcodenew : operator.OpTypeId, Amount, navigation, setLoading, setError });
-                if (result && result.success) {
+                
+                // Handle modal based on STATUSCODE
+                if (result && result.data) {
+                    const statusCode = result.data.STATUSCODE;
+                    const message = result.data.MESSAGE || result.message || 'Recharge processed.';
+                    
                     setShowConfirmationModal(false);
-                    setSuccessModalType('success');
-                    setSuccessModalMessage(`Recharge of ₹${Amount} for ${MobileNo} was successful!`);
+                    
+                    if (statusCode === '1' || statusCode === 1) {
+                        // Success
+                        setSuccessModalType('success');
+                        setSuccessModalMessage(`₹${Amount} recharged to ${MobileNo}\n\n${message}`);
+                    } else if (statusCode === '3' || statusCode === 3) {
+                        // Failed
+                        setSuccessModalType('error');
+                        setSuccessModalMessage(`${message}`);
+                    } else {
+                        // Pending or other
+                        setSuccessModalType('pending');
+                        setSuccessModalMessage(`${message}`);
+                    }
+                    
                     setSuccessModalVisible(true);
+                    
                     // Reset fields after successful recharge
-                    setTimeout(() => {
-                        setAmount('');
-                    }, 3000);
+                    if (statusCode === "1" || statusCode === 1) {
+                        setTimeout(() => {
+                            setAmount('');
+                        }, 3000);
+                    }
                 } else {
                     setSuccessModalType('error');
                     setSuccessModalMessage(result?.message || 'Recharge failed. Please try again.');

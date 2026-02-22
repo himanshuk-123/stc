@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Platform,
   Linking,
   Image,
+  Modal,
 } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import Header from '../component/Header';
@@ -24,7 +25,6 @@ import Toast from 'react-native-toast-message';
 
 const BASE_URL = 'https://onlinerechargeservice.in/App/webservice';
 const IMAGE_BASE_URL = 'https://onlinerechargeservice.in';
-const UPI_CALLBACK_URL = 'stc://upi-callback';
 
 const PayUScreen = () => {
   const [amount, setAmount] = useState<string>('');
@@ -34,7 +34,6 @@ const PayUScreen = () => {
   const [bankList, setBankList] = useState([]);
   const [selectedBank, setSelectedBank] = useState(null);
   const [bankListLoading, setBankListLoading] = useState(true);
-  const pendingUpiRef = useRef(false);
 
   const navigation = useNavigation();
   const isFocused = useIsFocused();
@@ -47,87 +46,34 @@ const PayUScreen = () => {
     }
   }, [isFocused]);
 
-  const handleUpiCallback = (url: string, force = false) => {
-    if (!url || !url.startsWith(UPI_CALLBACK_URL)) {
+  const openUpiApp = async () => {
+    if (!selectedBank) {
       return;
     }
 
-    if (!pendingUpiRef.current && !force) {
-      return;
-    }
-
-    pendingUpiRef.current = false;
-
-    const queryString = url.split('?')[1] || '';
-    const params = new URLSearchParams(queryString);
-    const rawStatus = params.get('Status') || params.get('status') || params.get('STATUS') || '';
-    const status = rawStatus.toLowerCase();
-    const txnRef =
-      params.get('txnRef') ||
-      params.get('TxnRef') ||
-      params.get('approvalRefNo') ||
-      params.get('ApprovalRefNo') ||
-      params.get('txnId') ||
-      params.get('tr') ||
-      '';
-
-    if (status === 'success') {
-      Toast.show({
-        type: 'success',
-        text1: 'Payment Successful',
-        text2: txnRef ? `Ref: ${txnRef}` : 'Your UPI payment was successful.',
-        position: 'bottom',
-        visibilityTime: 3000,
-      });
-      return;
-    }
-
-    if (status === 'failure' || status === 'failed') {
-      Toast.show({
-        type: 'error',
-        text1: 'Payment Failed',
-        text2: txnRef ? `Ref: ${txnRef}` : 'Your UPI payment failed.',
-        position: 'bottom',
-        visibilityTime: 3000,
-      });
-      return;
-    }
-
-    if (status === 'pending' || status === 'submitted') {
-      Toast.show({
-        type: 'info',
-        text1: 'Payment Pending',
-        text2: txnRef ? `Ref: ${txnRef}` : 'Your UPI payment is pending.',
-        position: 'bottom',
-        visibilityTime: 3000,
-      });
-      return;
-    }
-
-    Toast.show({
-      type: 'info',
-      text1: 'Payment Status',
-      text2: 'Unable to confirm payment status. Please check later.',
-      position: 'bottom',
-      visibilityTime: 3000,
+    const now = Date.now().toString();
+    const params = new URLSearchParams({
+      pa: selectedBank.UpiAdress,
+      pn: selectedBank.HolderName,
+      tid: `STC${now}`,
+      tr: `STC${now}`,
+      tn: 'payment',
+      am: amount,
+      cu: 'INR',
     });
+
+    const upiUrl = `upi://pay?${params.toString()}`;
+    const canOpen = await Linking.canOpenURL(upiUrl);
+    if (!canOpen) {
+      Alert.alert(
+        'No UPI App Found',
+        'Please install a UPI payment app (Google Pay, PhonePe, Paytm, etc.) to complete payment.'
+      );
+      return;
+    }
+
+    await Linking.openURL(upiUrl);
   };
-
-  useEffect(() => {
-    const subscription = Linking.addEventListener('url', (event) => {
-      handleUpiCallback(event.url);
-    });
-
-    Linking.getInitialURL().then((initialUrl) => {
-      if (initialUrl) {
-        handleUpiCallback(initialUrl, true);
-      }
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, []);
 
   const fetchBankList = async () => {
     setBankListLoading(true);
@@ -141,15 +87,17 @@ const PayUScreen = () => {
       console.log('Bank List Response:', response.data);
 
       if (response.data.STATUSCODE === '1' && response.data.MESSAGE === 'SUCCESS') {
-        // Filter only active UPI banks (IsUpiActive === 1)
-        const activeUpibanks = response.data.BANKLIST.filter(
-          (bank) => bank.IsUpiActive === 1
-        );
+        const activeUpibanks = response.data.BANKLIST.filter((bank) => {
+          const hasImage = typeof bank.images === 'string' && bank.images.trim().length > 0;
+          return bank.IsUpiActive === 1 && hasImage;
+        });
         setBankList(activeUpibanks);
 
         // Select first bank by default
         if (activeUpibanks.length > 0) {
           setSelectedBank(activeUpibanks[0]);
+        } else {
+          setSelectedBank(null);
         }
       } else {
         Alert.alert('Error', 'Failed to load bank list');
@@ -163,7 +111,7 @@ const PayUScreen = () => {
   };
 
   const validateAmount = (value: string): boolean => {
-    const numValue = parseFloat(value).toFixed(2);
+    const numValue = parseFloat(value);
     
     if (!value || value.trim() === '') {
       setError('Please enter an amount');
@@ -177,16 +125,18 @@ const PayUScreen = () => {
 
     // Check against selected bank limits
     if (selectedBank) {
-      // Use 10 as default minimum if not provided by API
-      const minAmount = selectedBank.MinAmount || 10;
-      
+      const rawMin = selectedBank.MinAmount;
+      const rawMax = selectedBank.MaxAmount;
+      const minAmount = typeof rawMin === 'number' ? rawMin : rawMin ? parseFloat(rawMin) : 10;
+      const maxAmount = typeof rawMax === 'number' ? rawMax : rawMax ? parseFloat(rawMax) : null;
+
       if (numValue < minAmount) {
         setError(`Minimum amount is ₹${minAmount}`);
         return false;
       }
 
-      if (selectedBank.MaxAmount && numValue > selectedBank.MaxAmount) {
-        setError(`Maximum amount for ${selectedBank.Bank_name} is ₹${selectedBank.MaxAmount}`);
+      if (maxAmount !== null && numValue > maxAmount) {
+        setError(`Maximum amount for ${selectedBank.Bank_name} is ₹${maxAmount}`);
         return false;
       }
     }
@@ -230,7 +180,10 @@ const PayUScreen = () => {
     }
 
     // Check if amount is within bank limits
-    const minAmount = selectedBank.MinAmount || 10;
+    const rawMin = selectedBank.MinAmount;
+    const rawMax = selectedBank.MaxAmount;
+    const minAmount = typeof rawMin === 'number' ? rawMin : rawMin ? parseFloat(rawMin) : 10;
+    const maxAmount = typeof rawMax === 'number' ? rawMax : rawMax ? parseFloat(rawMax) : null;
 
     if (parseFloat(amount) < minAmount) {
       Alert.alert(
@@ -240,10 +193,10 @@ const PayUScreen = () => {
       return;
     }
 
-    if (selectedBank.MaxAmount && parseFloat(amount) > selectedBank.MaxAmount) {
+    if (maxAmount !== null && parseFloat(amount) > maxAmount) {
       Alert.alert(
         'Error',
-        `Maximum amount for ${selectedBank.Bank_name} is ₹${selectedBank.MaxAmount}`
+        `Maximum amount for ${selectedBank.Bank_name} is ₹${maxAmount}`
       );
       return;
     }
@@ -268,63 +221,11 @@ console.log('UPI Payment Payload:', payload);
       console.log('UPI Payment Response:', response.data);
 
       if (response.data.STATUSCODE === '1' && response.data.MESSAGE === 'SUCCESS') {
-        // Step 2: API call successful, now open UPI app with selected bank's UPI details
-        const baseUrl = 'upi://pay';
-        const params = new URLSearchParams({
-          pa: selectedBank.UpiAdress,
-          pn: selectedBank.HolderName,
-          am: amount,
-          cu: 'INR',
-          tn: 'Add Money to Wallet',
-          url: UPI_CALLBACK_URL,
-        });
-
-        const upiUrl = `${baseUrl}?${params.toString()}`;
-
-        try {
-          const canOpen = await Linking.canOpenURL(upiUrl);
-          if (canOpen) {
-            pendingUpiRef.current = true;
-            await Linking.openURL(upiUrl);
-            // After UPI app closes/transaction completes, navigate to Home
-            setTimeout(() => {
-              setAmount('');
-              setSelectedQuickAmount(null);
-            }, 1000);
-          } else {
-            pendingUpiRef.current = false;
-            Alert.alert(
-              'No UPI App Found',
-              'Please install a UPI payment app (Google Pay, PhonePe, Paytm, etc.) to complete payment.',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    setAmount('');
-                    setSelectedQuickAmount(null);
-                  }
-                }
-              ]
-            );
-          }
-        } catch (upiError) {
-          pendingUpiRef.current = false;
-          console.error('Error opening UPI app:', upiError);
-          Alert.alert(
-            'Payment Initiated',
-            'Your payment request has been recorded. Please complete the payment manually.',
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  setAmount('');
-                  setSelectedQuickAmount(null);
-                  navigation.navigate('Home');
-                }
-              }
-            ]
-          );
-        }
+        await openUpiApp();
+        setTimeout(() => {
+          setAmount('');
+          setSelectedQuickAmount(null);
+        }, 1000);
       } else {
         Alert.alert(
           'Payment Failed',

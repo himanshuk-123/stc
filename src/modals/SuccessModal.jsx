@@ -1,24 +1,13 @@
 // MessageModal.js
 import React from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Animated, Easing, Dimensions } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, Animated, Easing, Dimensions, Image } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-// Custom Checkmark Icon Component
-const CheckmarkIcon = ({ size = 60, color = 'white' }) => (
-  <View style={[styles.iconContainer, { width: size, height: size, borderColor: color }]}>
-    <View style={[styles.checkmarkStem, { backgroundColor: color }]} />
-    <View style={[styles.checkmarkKick, { backgroundColor: color }]} />
-  </View>
-);
-
-// Custom Cross Icon Component
-const CrossIcon = ({ size = 60, color = 'white' }) => (
-  <View style={[styles.iconContainer, { width: size, height: size }]}>
-    <View style={[styles.crossLine, styles.crossLineFirst, { backgroundColor: color }]} />
-    <View style={[styles.crossLine, styles.crossLineSecond, { backgroundColor: color }]} />
-  </View>
-);
+// Import icons
+import successIcon from '../../assets/successIcon.png';
+import failIcon from '../../assets/failIcon.png';
+import pendingIcon from '../../assets/pendingIcon.png';
 
 const MessageModal = ({ 
   visible, 
@@ -97,7 +86,8 @@ const MessageModal = ({
   if (!visible) return null;
 
   const isSuccess = type === 'success';
-  const bgColor = backgroundColor || (isSuccess ? '#4CAF50' : '#F44336');
+  const isPending = type === 'pending';
+  const bgColor = backgroundColor || (isSuccess ? '#4CAF50' : isPending ? '#FFC107' : '#F44336');
 
   return (
     <Modal transparent visible={visible} animationType="none">
@@ -112,7 +102,11 @@ const MessageModal = ({
           ]}
         >
           <View style={styles.content}>
-            {isSuccess ? <CheckmarkIcon color={iconColor} /> : <CrossIcon color={iconColor} />}
+            <Image 
+              source={isSuccess ? successIcon : isPending ? pendingIcon : failIcon} 
+              style={styles.iconImage}
+              resizeMode="contain"
+            />
             {title && <Text style={[styles.titleText, { color: titleColor }]}>{title}</Text>}
             <Text style={[styles.messageText, { color: messageColor }]}>{message}</Text>
           </View>
@@ -126,8 +120,8 @@ const MessageModal = ({
           
           <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
             <View style={[styles.closeIcon, { backgroundColor: 'white' }]}>
-              <View style={[styles.closeLine, styles.closeLineFirst]} />
-              <View style={[styles.closeLine, styles.closeLineSecond]} />
+              <View style={[styles.closeLine, styles.closeLineFirst, { backgroundColor: '#333' }]} />
+              <View style={[styles.closeLine, styles.closeLineSecond, { backgroundColor: '#333' }]} />
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -190,38 +184,11 @@ const styles = StyleSheet.create({
     right: 10,
     padding: 5,
   },
-  iconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderRadius: 30,
-  },
-  checkmarkStem: {
-    position: 'absolute',
-    width: 4,
-    height: 24,
-    transform: [{ rotate: '45deg' }],
-    top: 12,
-    left: 16,
-  },
-  checkmarkKick: {
-    position: 'absolute',
-    width: 4,
-    height: 12,
-    transform: [{ rotate: '-45deg' }],
-    top: 20,
-    left: 10,
-  },
-  crossLine: {
-    position: 'absolute',
-    width: 4,
-    height: 30,
-  },
-  crossLineFirst: {
-    transform: [{ rotate: '45deg' }],
-  },
-  crossLineSecond: {
-    transform: [{ rotate: '-45deg' }],
+  iconImage: {
+    width: 80,
+    height: 80,
+    marginBottom: 10,
+    borderRadius: 40,
   },
   closeIcon: {
     width: 24,
@@ -240,6 +207,14 @@ const styles = StyleSheet.create({
   },
   closeLineSecond: {
     transform: [{ rotate: '-45deg' }],
+  },
+  pendingHand: {
+    position: 'absolute',
+    width: 3,
+    borderRadius: 2,
+    top: '10%',
+    right: '45%',
+    transform: [{ rotate: '45deg' }],
   },
 });
 

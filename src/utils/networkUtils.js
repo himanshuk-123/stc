@@ -1,5 +1,5 @@
-import Toast from 'react-native-toast-message';
 import NetInfo from '@react-native-community/netinfo';
+import { emitNetworkError } from './networkModal';
 
 let networkListeners = [];
 
@@ -51,14 +51,7 @@ export const unsubscribeAllNetworkListeners = () => {
  */
 export const showNetworkErrorToast = (errorMessage = null) => {
   const message = errorMessage || 'Please check your network and try again';
-
-  Toast.show({
-    type: 'error',
-    text1: 'No Internet Connection',
-    text2: message,
-    position: 'bottom',
-    visibilityTime: 3000,
-  });
+  emitNetworkError(message);
 };
 
 /**

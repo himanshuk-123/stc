@@ -1,6 +1,6 @@
 import axios from 'axios';
-import Toast from 'react-native-toast-message';
 import NetInfo from '@react-native-community/netinfo';
+import { emitNetworkError } from './networkModal';
 
 /**
  * Setup global axios interceptors for all axios instances
@@ -14,13 +14,7 @@ export const setupAxiosInterceptors = () => {
       const netState = await NetInfo.fetch();
       
       if (!netState.isConnected || !netState.isInternetReachable) {
-        Toast.show({
-          type: 'error',
-          text1: 'No Internet Connection',
-          text2: 'Please check your network and try again',
-          position: 'bottom',
-          visibilityTime: 3000,
-        });
+        emitNetworkError('Please check your network and try again');
         // Cancel the request
         return Promise.reject({ 
           isNetworkError: true, 
@@ -50,24 +44,12 @@ export const setupAxiosInterceptors = () => {
       ) {
         // Check if it's not already handled by request interceptor
         if (!error.isNetworkError) {
-          Toast.show({
-            type: 'error',
-            text1: 'Network Error',
-            text2: 'Unable to reach server. Please check your connection.',
-            position: 'bottom',
-            visibilityTime: 3000,
-          });
+          emitNetworkError('Unable to reach server. Please check your connection.');
         }
       }
       // Handle timeout errors
       else if (error.code === 'ECONNABORTED') {
-        Toast.show({
-          type: 'error',
-          text1: 'Request Timeout',
-          text2: 'The request took too long. Please try again.',
-          position: 'bottom',
-          visibilityTime: 3000,
-        });
+        emitNetworkError('The request took too long. Please try again.');
       }
       
       return Promise.reject(error);

@@ -291,11 +291,11 @@ const HomeScreen = () => {
             <View style={{flexDirection:'row',alignItems:'center',gap:10}}>
             <View style={styles.walletContainer}>
               <Image source={wallet} style={{ width: 20, height: 20 }} />
-              <Text style={{color:'#00e676',fontSize:18,fontWeight:'bold',paddingLeft:5}}>₹ {userData.closingbalance ? parseFloat(userData.closingbalance).toFixed(2) : '0.00'}</Text>
+              <Text style={styles.walletAmountPositive}>₹ {userData.closingbalance ? parseFloat(userData.closingbalance).toFixed(2) : '0.00'}</Text>
             </View>
-            <View style={[styles.walletContainer]}>
+            <View style={styles.walletContainer}>
               <Image source={wallet} style={{ width: 20, height: 20 }} />
-              <Text style={{color:'#ff5252',fontSize:18,fontWeight:'bold',paddingLeft:5}}>₹ {userData.standingbalance ? parseFloat(userData.standingbalance).toFixed(0) : '0.00'}</Text>
+              <Text style={styles.walletAmountNegative}>₹ {userData.standingbalance ? parseFloat(userData.standingbalance).toFixed(0) : '0.00'}</Text>
             </View>
             </View>
             {/* <View style={[styles.walletContainer,{marginTop:verticalScale(10),marginBottom:verticalScale(10)}]}>
@@ -305,6 +305,13 @@ const HomeScreen = () => {
             <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
               <Image source={notification} style={{ width: 30, height: 30 }} />
             </TouchableOpacity>
+          </View>
+
+          <View style={styles.commissionRow}>
+            <Text style={styles.commissionRowLabel}>Total Commission</Text>
+            <Text style={styles.commissionRowValue}>
+              ₹ {userData.commission ? parseFloat(userData.commission).toFixed(2) : '0.00'}
+            </Text>
           </View>
 
           {/* Carousel */}
@@ -328,16 +335,6 @@ const HomeScreen = () => {
   </View>
 )}
   
-          {/* Commission Banner */}
-          <View style={styles.commissionBanner}>
-            <View style={styles.commissionBannerContent}>
-              <Text style={styles.commissionBannerLabel}>💰 Your Total Commission</Text>
-              <Text style={styles.commissionBannerValue}>
-                ₹ {userData.commission ? parseFloat(userData.commission).toFixed(2) : '0.00'}
-              </Text>
-            </View>
-          </View>
-
           {/* Row of 2 Cards */}
           <View style={styles.twoCardsRow}>
             <Cards
@@ -541,7 +538,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(10)
   },
   menuButton: {
-    backgroundColor: 'black',
+    backgroundColor: '#1f2937',
     padding: 8,
     borderRadius: 9999
   },
@@ -570,17 +567,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 40,
-    backgroundColor: '#fef9c3',
+    backgroundColor: '#eef2ff',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
     elevation: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#e4e4e7',
+    borderBottomColor: '#c7d2fe',
   },
   
   notificationText: {
-    color: '#854d0e',
+    color: '#3730a3',
     fontWeight: '500',
   },  
   twoCardsRow: {
@@ -640,32 +637,38 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#ff9800'
   },
-  commissionBanner: {
-    borderRadius: 12,
-    marginVertical: verticalScale(10),
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  commissionBannerContent: {
-    backgroundColor: '#9c27b0',
-    padding: 16,
-    borderRadius: 12,
+  commissionRow: {
+    marginTop: verticalScale(8),
+    marginBottom: verticalScale(8),
+    paddingVertical: verticalScale(6),
+    paddingHorizontal: horizontalScale(10),
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center'
   },
-  commissionBannerLabel: {
-    fontSize: 16,
+  commissionRowLabel: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff'
+    color: '#475569',
   },
-  commissionBannerValue: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#ffd54f'
+  commissionRowValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0f766e',
+  },
+  walletAmountPositive: {
+    color: '#16a34a',
+    fontSize: 18,
+    fontWeight: '700',
+    paddingLeft: 5,
+  },
+  walletAmountNegative: {
+    color: '#dc2626',
+    fontSize: 18,
+    fontWeight: '700',
+    paddingLeft: 5,
   },
   notificationScrollContent: {
     flexGrow: 1,
