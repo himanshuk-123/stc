@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,20 +10,17 @@ import {
   ScrollView,
   ActivityIndicator,
   Platform,
-  Linking,
   Image,
-  Modal,
 } from 'react-native';
-import { useNavigation, useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import Header from '../component/Header';
 import GradientLayout from '../component/GradientLayout';
 import { horizontalScale, moderateScale, verticalScale } from '../utils/responsive';
 import { useAppSelector } from '../redux/hooks';
-import axios from 'axios';
 import BankService from '../services/BankService';
-import Toast from 'react-native-toast-message';
+import ViewShot from 'react-native-view-shot';
+import Share from 'react-native-share';
 
-const BASE_URL = 'https://onlinerechargeservice.in/App/webservice';
 const IMAGE_BASE_URL = 'https://onlinerechargeservice.in';
 
 const PayUScreen = () => {
@@ -34,8 +31,8 @@ const PayUScreen = () => {
   const [bankList, setBankList] = useState([]);
   const [selectedBank, setSelectedBank] = useState(null);
   const [bankListLoading, setBankListLoading] = useState(true);
+  const viewShotRef = useRef(null);
 
-  const navigation = useNavigation();
   const isFocused = useIsFocused();
   const userData = useAppSelector((state) => state.user);
 
@@ -46,33 +43,24 @@ const PayUScreen = () => {
     }
   }, [isFocused]);
 
-  const openUpiApp = async () => {
-    if (!selectedBank) {
+  const handleShare = async () => {
+    if (!viewShotRef.current) {
+      Alert.alert('Error', 'QR preview is not available yet.');
       return;
     }
 
-    const now = Date.now().toString();
-    const params = new URLSearchParams({
-      pa: selectedBank.UpiAdress,
-      pn: selectedBank.HolderName,
-      tid: `STC${now}`,
-      tr: `STC${now}`,
-      tn: 'payment',
-      am: amount,
-      cu: 'INR',
-    });
+    try {
+      const uri = await viewShotRef.current.capture();
 
-    const upiUrl = `upi://pay?${params.toString()}`;
-    const canOpen = await Linking.canOpenURL(upiUrl);
-    if (!canOpen) {
-      Alert.alert(
-        'No UPI App Found',
-        'Please install a UPI payment app (Google Pay, PhonePe, Paytm, etc.) to complete payment.'
-      );
-      return;
+      await Share.open({
+        url: uri,
+        type: 'image/png',
+        failOnCancel: false,
+      });
+    } catch (error) {
+      console.error('QR share error:', error);
+      Alert.alert('Error', 'Unable to share QR code. Please try again.');
     }
-
-    await Linking.openURL(upiUrl);
   };
 
   const fetchBankList = async () => {
@@ -200,49 +188,9 @@ const PayUScreen = () => {
       );
       return;
     }
-
     setIsLoading(true);
-
-    try {
-      // Step 1: Call API to record payment request on server
-      const payload = {
-        Tokenid: userData.tokenid,
-        Amount: parseFloat(amount),
-        Version: Platform.OS === 'android' ? Platform.Version.toString() : '1',
-        Location: userData.location || null,
-      };
-console.log('UPI Payment Payload:', payload);
-      const response = await axios.post(`${BASE_URL}/UpiStcPay`, payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log('UPI Payment Response:', response.data);
-
-      if (response.data.STATUSCODE === '1' && response.data.MESSAGE === 'SUCCESS') {
-        await openUpiApp();
-        setTimeout(() => {
-          setAmount('');
-          setSelectedQuickAmount(null);
-        }, 1000);
-      } else {
-        Alert.alert(
-          'Payment Failed',
-          response.data.MESSAGE || 'Unable to process payment. Please try again.',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (err) {
-      console.error('UPI Payment Error:', err);
-      Alert.alert(
-        'Error',
-        'Failed to initiate payment. Please check your internet connection and try again.',
-        [{ text: 'OK' }]
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    await handleShare();
+    setIsLoading(false);
   };
 
   const isPaymentDisabled = !amount || !!error || parseFloat(amount) < 10 || isLoading || !selectedBank;
@@ -253,7 +201,9 @@ console.log('UPI Payment Payload:', payload);
         <Header headingTitle="Pay Via UPI" />
         
         <ScrollView 
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
+          persistentScrollbar={true}
+          indicatorStyle="black"
           contentContainerStyle={styles.scrollContent}
         >
           <View style={styles.content}>
@@ -350,19 +300,22 @@ console.log('UPI Payment Payload:', payload);
                           resizeMode="contain"
                         />
                       )}
-                      <Text style={styles.bankName}>{bank.Bank_name}</Text>
-                      <Text style={styles.bankHolder}>{bank.HolderName}</Text>
+                      <Text style={styles.bankName}>{bank.HolderName}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
 
-                {/* Selected Bank Details */}
-                {selectedBank && (
-                  <View style={styles.selectedBankInfo}>
-                    <Text style={styles.selectedBankLabel}>Paying to:</Text>
-                    <Text style={styles.selectedBankName}>{selectedBank.Bank_name}</Text>
-                    <Text style={styles.selectedBankHolder}>{selectedBank.HolderName}</Text>
-                  </View>
+                {/* Hidden ViewShot for capturing selected bank QR */}
+                {selectedBank?.images && (
+                  <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1 }}>
+                    <View style={styles.qrPreviewContainer}>
+                      <Image
+                        source={{ uri: IMAGE_BASE_URL + selectedBank.images }}
+                        style={styles.qrPreviewImage}
+                        resizeMode="contain"
+                      />
+                    </View>
+                  </ViewShot>
                 )}
               </>
             )}
@@ -490,7 +443,7 @@ const styles = StyleSheet.create({
   
   // Quick Amount Styles
   quickAmountContainer: {
-    marginBottom: verticalScale(24),
+    marginBottom: verticalScale(10),
   },
   quickAmountLabel: {
     fontSize: moderateScale(15),
@@ -679,6 +632,20 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: verticalScale(4),
     lineHeight: moderateScale(18),
+  },
+  qrPreviewContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: moderateScale(12),
+    paddingVertical: verticalScale(12),
+    marginBottom: verticalScale(16),
+  },
+  qrPreviewImage: {
+    width: horizontalScale(180),
+    height: verticalScale(180),
+    backgroundColor: '#f0f0f0',
+    borderRadius: moderateScale(8),
   },
 });
 

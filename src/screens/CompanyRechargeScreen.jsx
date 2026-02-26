@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { View, Text, Link, SafeAreaView, TextInput, Image, ScrollView, Alert, ActivityIndicator, FlatList, TouchableOpacity, Platform, Modal, StyleSheet, PermissionsAndroid } from 'react-native';
+import { View, Text, SafeAreaView, TextInput, Image, ScrollView, Alert, FlatList, TouchableOpacity, Platform, Modal, StyleSheet, PermissionsAndroid, Linking, ActivityIndicator } from 'react-native';
 import Header from '../component/Header';
 import GradientLayout from '../component/GradientLayout';
 import CustomButton from '../component/button';
@@ -11,14 +11,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleRecharge as rechargeApiCall } from '../component/Commonfunction';
 import phone from '../../assets/phone_icon.png';
 import MessageModal from '../modals/SuccessModal';
+import Contacts from 'react-native-contacts';
+
 const CompanyRechargeScreen = ({ route }) => {
     const { operator, mode, opcodenew, number, price, headingTitle, screenName } = route.params;
     const [MobileNo, setMobileNo] = useState(operator.MobileNO ? operator.MobileNO : number || '');
     const [Amount, setAmount] = useState(price || '');
     const [loading, setLoading] = useState(false);
+    const [contactsLoading, setContactsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [contacts, setContacts] = useState([]);
     const [showContactList, setShowContactList] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [customerInfo, setCustomerInfo] = useState(false);
     const [customerInfoData, setCustomerInfoData] = useState({
@@ -68,44 +72,47 @@ const CompanyRechargeScreen = ({ route }) => {
         }
     }, [price]);
 
-    const openContacts = async () => {
-        try {
-            await handleOpenContacts();
-            const { data } = await Contacts.getAll();
-            const filtered = data.filter(
-                c => c.phoneNumbers && c.phoneNumbers.length > 0
-            );
-            setContacts(filtered);
-            setShowContactList(true);  // Show contact list
-        } catch (error) {
-            Alert.alert('Error', 'Could not access contacts.');
+
+const openContacts = async () => {
+  try {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+        {
+          title: 'Contacts Permission',
+          message: 'App needs access to your contacts.',
+          buttonPositive: 'Allow',
+          buttonNegative: 'Deny',
         }
-    };
-    // const pickContact = async () => {
-    //     const granted = await PermissionsAndroid.request(
-    //       PermissionsAndroid.PERMISSIONS.READ_CONTACTS
-    //     );
+      );
 
-    //     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-    //       Alert.alert("Permission Denied", "Cannot open contacts without permission");
-    //       return;
-    //     }
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert('Permission Denied', 'Cannot access contacts.');
+        return;
+      }
+    }
 
-    //     try {
-    //       const contact = await selectContactPhone();
-    //       if (contact) {
-    //         console.log("Selected Contact:", contact);
-    //         setMobileNo(contact.selectedPhone.number);
-    //         console.log("contact", contact);
-    //         setShowContactList(false);
-    //       }
-    //     } catch (err) {
-    //       console.log("Picker Error", err);
-    //       console.log("Picker Error:", JSON.stringify(err, null, 2));
+    // ✅ getAll use karo, openContactSelection nahi
+    setContactsLoading(true);
+    Contacts.getAll().then((allContacts) => {
+      setContactsLoading(false);
+      // Sirf jinke phone number hain unhe filter karo
+      const filtered = allContacts.filter(
+        (c) => c.phoneNumbers && c.phoneNumbers.length > 0
+      );
+      setContacts(filtered);       // contacts state already hai tumhare code mein
+      setShowContactList(true);    // modal open karo
+    }).catch((err) => {
+      setContactsLoading(false);
+      console.error('getAll error:', err);
+    });
 
-    //       Alert.alert("Error", "Could not open contact picker.");
-    //     }
-    //   };
+  } catch (error) {
+    setContactsLoading(false);
+    console.error('Contact error:', error);
+  }
+};
+  
     const openSettings = () => {
         if (Platform.OS === 'ios') {
             Linking.openURL('app-settings:');
@@ -271,30 +278,85 @@ const CompanyRechargeScreen = ({ route }) => {
                 </View>
                 {
                     showContactList ? (
-                        <Modal visible={showContactList} animationType="slide">
-                            <SafeAreaView style={styles.modalContainer}>
-                                <Text style={styles.modalTitle}>Select a Contact</Text>
-                                <FlatList
-                                    data={contacts}
-                                    keyExtractor={(item) => item.id}
-                                    renderItem={({ item }) => (
-                                        <TouchableOpacity
-                                            style={styles.contactItem}
-                                            onPress={() => processSelectedContact(item)}
-                                        >
-                                            <Text style={styles.contactName}>{item.name}</Text>
-                                            <Text style={styles.contactNumber}>{item.phoneNumbers[0]?.number}</Text>
-                                        </TouchableOpacity>
-                                    )}
-                                />
-                                <TouchableOpacity
-                                    onPress={() => setShowContactList(false)}
-                                    style={styles.cancelButton}
-                                >
-                                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                                </TouchableOpacity>
-                            </SafeAreaView>
-                        </Modal>
+<Modal visible={showContactList} animationType="slide">
+    <SafeAreaView style={styles.modalContainer}>
+        <Text style={styles.modalTitle}>Select a Contact</Text>
+
+        {/* ✅ Search Box */}
+        <TextInput
+            placeholder="Search by name or number..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={{
+                borderWidth: 1,
+                borderColor: '#ccc',
+                borderRadius: 8,
+                padding: 10,
+                marginBottom: 10,
+                marginHorizontal: 4,
+                fontSize: 16,
+                color: '#000'
+            }}
+            placeholderTextColor="#888"
+        />
+
+        <FlatList
+            data={contacts.filter(c => {
+                const fullName = (c.displayName || `${c.givenName || ''} ${c.familyName || ''}`).toLowerCase();
+                const number = c.phoneNumbers[0]?.number || '';
+                return (
+                    fullName.includes(searchQuery.toLowerCase()) ||
+                    number.includes(searchQuery)
+                );
+            })}
+            keyExtractor={(item, index) => item.recordID?.toString() || index.toString()} // ✅ key fix
+            renderItem={({ item }) => {
+                // ✅ Name properly fetch karo
+                const fullName = item.displayName || 
+                    `${item.givenName || ''} ${item.familyName || ''}`.trim() || 
+                    'Unknown';
+                const number = item.phoneNumbers[0]?.number || '';
+
+                return (
+                    <TouchableOpacity
+                        style={styles.contactItem}
+                        onPress={() => processSelectedContact(item)}
+                    >
+                        {/* Avatar Circle with first letter */}
+                        <View style={{
+                            width: 42,
+                            height: 42,
+                            borderRadius: 21,
+                            backgroundColor: '#007bff',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginRight: 12
+                        }}>
+                            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>
+                                {fullName.charAt(0).toUpperCase()}
+                            </Text>
+                        </View>
+
+                        <View>
+                            <Text style={styles.contactName}>{fullName}</Text>
+                            <Text style={styles.contactNumber}>{number}</Text>
+                        </View>
+                    </TouchableOpacity>
+                );
+            }}
+        />
+
+        <TouchableOpacity
+            onPress={() => {
+                setShowContactList(false);
+                setSearchQuery(''); // search clear karo jab close ho
+            }}
+            style={styles.cancelButton}
+        >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+    </SafeAreaView>
+</Modal>
                     ) :
                         <ScrollView style={styles.scrollView}
                             showsVerticalScrollIndicator={false}
@@ -349,8 +411,12 @@ const CompanyRechargeScreen = ({ route }) => {
 
                                 {
                                     mode != "2" ?
-                                        <TouchableOpacity >
-                                            <Image source={contact} style={{ height: 30, width: 30 }} />
+                                        <TouchableOpacity onPress={openContacts} disabled={contactsLoading}>
+                                            {contactsLoading ? (
+                                                <ActivityIndicator size="small" color="#007bff" />
+                                            ) : (
+                                                <Image source={contact} style={{ height: 30, width: 30 }} />
+                                            )}
                                         </TouchableOpacity> : ""
                                 }
                             </View>
@@ -496,20 +562,26 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 16
+        marginBottom: 16,
+        color: '#000'
     },
-    contactItem: {
-        padding: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0'
-    },
-    contactName: {
-        fontSize: 18,
-        fontWeight: '600'
-    },
-    contactNumber: {
-        color: '#666'
-    },
+contactItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    flexDirection: 'row',      // ✅ avatar aur text side by side
+    alignItems: 'center',
+},
+ contactName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000'
+},
+contactNumber: {
+    color: '#666',
+    fontSize: 13,
+    marginTop: 2
+},
     cancelButton: {
         marginTop: 16,
         padding: 12,
@@ -610,16 +682,14 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        color: 'black'
+        backgroundColor: 'rgba(0,0,0,0.5)'
     },
     modalContent: {
         backgroundColor: 'white',
         padding: 24,
         borderRadius: 12,
         width: '83%',
-        alignItems: 'center',
-        color: 'black'
+        alignItems: 'center'
     },
     modalOperatorImage: {
         width: 80,
@@ -630,8 +700,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 18,
         textDecorationLine: 'underline',
-        color: '#1e3a8a',
-        color: 'black'
+        color: '#1e3a8a'
     },
     modalAmount: {
         fontWeight: 'bold',
@@ -642,85 +711,44 @@ const styles = StyleSheet.create({
     modalWarning: {
         color: '#666',
         textAlign: 'center',
-        marginBottom: 16,
-        color: 'black'
+        marginBottom: 16
     },
     modalButtons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
-        marginTop: 8,
-        color: 'black'
+        marginTop: 8
     },
     cancelModalButton: {
         backgroundColor: '#d1d5db',
         paddingVertical: 12,
         paddingHorizontal: 24,
-        borderRadius: 25,
-        color: 'black'
+        borderRadius: 25
     },
     cancelModalButtonText: {
         fontWeight: 'bold',
-        color: '#4b5563',
-        color: 'black'
+        color: '#4b5563'
     },
     continueButton: {
         backgroundColor: '#22c55e',
         paddingVertical: 12,
         paddingHorizontal: 24,
-        borderRadius: 25,
-        color: 'black'
+        borderRadius: 25
     },
     continueButtonText: {
         fontWeight: 'bold',
-        color: 'white',
-        color: 'black'
+        color: 'white'
     },
     infoText: {
         fontSize: 16,
         marginBottom: 6,
-        color: '#333',
-        color: 'black'
-    },
-    modalContent: {
-        backgroundColor: 'white',
-        padding: 24,
-        borderRadius: 12,
-        width: '80%',
-        alignItems: 'center',
-        color: 'black'
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        color: 'black'
-    },
-    modalText: {
-        color: '#333',
-        textAlign: 'center',
-        marginBottom: 24,
-        color: 'black'
-    },
-    modalButton: {
-        backgroundColor: '#3b82f6',
-        paddingVertical: 12,
-        paddingHorizontal: 48,
-        borderRadius: 9999,
-        color: 'black'
-    },
-    modalButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 18,
-        color: 'black'
+        color: '#333'
     },
     modalButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        width: '100%',
-        color: 'black',
+        width: '100%'
     },
     modalNote: {
         color: '#5a5e5b',
@@ -728,6 +756,4 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: 'bold'
     }
-
-
 });
