@@ -20,6 +20,7 @@ const services = [
     { id: '4', name: 'User Day Book', image: require('../../assets/userDayBook.webp'),navigate:'UserDayBook'},
     { id: '5', name: 'Fund Request List', image: require('../../assets/fundRequestList.png'),navigate:'FundRequestList'},
     { id: '6', name: 'Member List', image: require('../../assets/memberList.png'),navigate:'MemberList' },
+    { id: '9', name: 'Distributer Fund', image: require('../../assets/fundRequestList.png'),navigate:'DistributerFund' },
     { id: '7', name: 'Reports List', image: require('../../assets/reports_icon.png'),navigate:'ReportsList' },
     { id: '7', name: 'Standing Report', image: require('../../assets/loan.webp'),navigate:'StandingReport' },
 ]
@@ -35,7 +36,9 @@ const ReportsScreen = () => {
     const cardHeight = verticalScale(80);
 
     const filteredServices = services.filter(item =>
-        item.name === 'Member List' ? userData.usertype === 'Distributer' : true
+                ['Member List', 'Distributer Fund'].includes(item.name)
+                    ? userData.usertype === 'Distributer'
+                    : true
       );
     const renderItem = ({ item }) => (
         <View style={{

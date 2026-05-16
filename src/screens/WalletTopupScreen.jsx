@@ -20,22 +20,66 @@ import { useNavigation } from '@react-navigation/native';
 import ReportService from '../services/reportService';
 
 const WalletTopupScreen = ({ route }) => {
-  const { userId } = route.params;
+  const { userId, users, amount: initialAmount } = route.params || {};
   const userData = useSelector(state => state.user);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [data, setData] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(userId||null);
-  const [amount, setAmount] = useState('');
+  const [data, setData] = useState(users || []);
+  const [selectedUser, setSelectedUser] = useState(userId || null);
+  const [amount, setAmount] = useState(initialAmount || '');
   const [transactionType, setTransactionType] = useState('TOPUP');
   const [smsOff, setSmsOff] = useState('OFF');
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
+  const formatBalance = (balance) => {
+    const numericBalance = Number(balance);
+
+    if (Number.isNaN(numericBalance)) {
+      return balance ?? '0.00';
+    }
+
+    return numericBalance.toFixed(2);
+  };
+
+  const getSelectedUserDetails = (userIdValue, userList) => {
+    if (!userIdValue || !Array.isArray(userList)) {
+      return null;
+    }
+
+    return userList.find((item) => item.Userid === userIdValue) || null;
+  };
+
   useEffect(() => {
     const MemberList = async () => {
       setLoading(true);
       try {
+        // If callers provided the users list (e.g., from MemberListScreen), use it and skip fetch
+        if (users && users.length) {
+          setData(users);
+          // ensure selected user & amount prefill from route or balance lookup
+          const selectedUserDetails = getSelectedUserDetails(userId, users);
+
+          if (userId) setSelectedUser(userId);
+          if (selectedUserDetails) {
+            const numBal = Number(selectedUserDetails.Balance);
+            if (!Number.isNaN(numBal) && numBal > 0) {
+              setAmount(formatBalance(selectedUserDetails.Balance));
+            } else {
+              setAmount('');
+            }
+          } else if (initialAmount) {
+            const numInit = Number(initialAmount);
+            if (!Number.isNaN(numInit) && numInit > 0) {
+              setAmount(formatBalance(initialAmount));
+            } else {
+              setAmount('');
+            }
+          }
+          setLoading(false);
+          return;
+        }
+
         const payload = {
           Tokenid: userData.tokenid,
           Version: "1",
@@ -47,15 +91,17 @@ const WalletTopupScreen = ({ route }) => {
           payload.Version,
           payload.Location
         );
-        const data = response.data;
-        console.log("Himanshu Kasoudhan: ",data)
-        if(data.STATUSCODE !== '1'){
+        const resData = response.data;
+        console.log("Himanshu Kasoudhan: ", resData);
+        if (resData.STATUSCODE !== '1') {
           setShowErrorModal(true);
-          setErrorMessage(data.MESSAGE);
+          setErrorMessage(resData.MESSAGE);
         }
-        if(data.ERROR === '0'){
-          if(data.MEMBERLIST==null){
-            Alert.alert("Error", data.MESSAGE,
+        if (resData.ERROR === '0') {
+          if (resData.MEMBERLIST == null) {
+            Alert.alert(
+              "Error",
+              resData.MESSAGE,
               [
                 {
                   text: "OK",
@@ -65,12 +111,20 @@ const WalletTopupScreen = ({ route }) => {
                 },
               ]
             );
-          }else{
-            setData(data.MEMBERLIST);
+          } else {
+            setData(resData.MEMBERLIST);
+            const selectedUserDetails = getSelectedUserDetails(userId, resData.MEMBERLIST);
+
+            if (selectedUserDetails) {
+              setAmount(formatBalance(selectedUserDetails.Balance));
+            } else if (initialAmount) {
+              setAmount(formatBalance(initialAmount));
+            }
           }
-        }
-        else{
-          Alert.alert("Error", data.MESSAGE,
+        } else {
+          Alert.alert(
+            "Error",
+            resData.MESSAGE,
             [
               {
                 text: "OK",
@@ -88,7 +142,7 @@ const WalletTopupScreen = ({ route }) => {
       }
     };
 
-    MemberList(); // Fetch all on mount
+    MemberList(); // Fetch all on mount (or use provided users)
   }, []);
 
   const handleSubmit = async () => {
@@ -139,6 +193,20 @@ const WalletTopupScreen = ({ route }) => {
     }
   };
 
+  const handleUserChange = (itemValue) => {
+    setSelectedUser(itemValue);
+    const selectedUserDetails = getSelectedUserDetails(itemValue, data);
+
+    if (selectedUserDetails) {
+        const numBal = Number(selectedUserDetails.Balance);
+        if (!Number.isNaN(numBal) && numBal > 0) {
+          setAmount(formatBalance(selectedUserDetails.Balance));
+        } else {
+          setAmount('');
+        }
+    }
+  };
+
   return (
     <GradientLayout>
       <SafeAreaView style={styles.container}>
@@ -148,7 +216,7 @@ const WalletTopupScreen = ({ route }) => {
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={selectedUser}
-                onValueChange={(itemValue) => setSelectedUser(itemValue)}
+                onValueChange={handleUserChange}
                 style={styles.picker}
                 dropdownIconColor="#000"
               >

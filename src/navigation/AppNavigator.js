@@ -21,6 +21,7 @@ import StandingReportScreen from '../screens/StandingReportScreen';
 import UserDayBookScreen from '../screens/UserDayBookScreen';
 import FundRequestListScreen from '../screens/FundRequestListScreen';
 import MemberListScreen from '../screens/MemberListScreen';
+import DistributerFundScreen from '../screens/DistributerFundScreen';
 import SupportScreen from '../screens/SupportScreen';
 import ContactScreen from '../screens/ContactScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
@@ -71,6 +72,7 @@ const AppNavigator = () => {
       <Stack.Screen name="UserDayBook" component={UserDayBookScreen} />
       <Stack.Screen name="FundRequestList" component={FundRequestListScreen} />
       <Stack.Screen name="MemberList" component={MemberListScreen} />
+      <Stack.Screen name="DistributerFund" component={DistributerFundScreen} />
       <Stack.Screen name="Support" component={SupportScreen} />
       <Stack.Screen name="Contact" component={ContactScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />

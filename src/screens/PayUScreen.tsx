@@ -12,7 +12,7 @@ import {
   Platform,
   Image,
 } from 'react-native';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import Header from '../component/Header';
 import GradientLayout from '../component/GradientLayout';
 import { horizontalScale, moderateScale, verticalScale } from '../utils/responsive';
@@ -20,28 +20,36 @@ import { useAppSelector } from '../redux/hooks';
 import BankService from '../services/BankService';
 import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
+import CustomButton from '../component/button';
 
 const IMAGE_BASE_URL = 'https://onlinerechargeservice.in';
 
+type BankItem = {
+  Bankid: number | string;
+  Bank_name?: string;
+  HolderName?: string;
+  MinAmount?: number | string;
+  MaxAmount?: number | string | null;
+  IsUpiActive?: number;
+  images?: string | null;
+};
+
 const PayUScreen = () => {
   const [amount, setAmount] = useState<string>('');
+  const [reference, setReference] = useState<string>('');
   const [selectedQuickAmount, setSelectedQuickAmount] = useState<number | null>(null);
   const [error, setError] = useState<string>('');
+  const [referenceError, setReferenceError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
-  const [bankList, setBankList] = useState([]);
-  const [selectedBank, setSelectedBank] = useState(null);
+  const [isSubmittingReference, setIsSubmittingReference] = useState(false);
+  const [bankList, setBankList] = useState<BankItem[]>([]);
+  const [selectedBank, setSelectedBank] = useState<BankItem | null>(null);
   const [bankListLoading, setBankListLoading] = useState(true);
-  const viewShotRef = useRef(null);
+  const viewShotRef = useRef<any>(null);
 
   const isFocused = useIsFocused();
-  const userData = useAppSelector((state) => state.user);
-
-  // Fetch bank list on screen focus
-  useEffect(() => {
-    if (isFocused) {
-      fetchBankList();
-    }
-  }, [isFocused]);
+  const navigation = useNavigation<any>();
+  const userData = useAppSelector((state: any) => state.user);
 
   const handleShare = async () => {
     if (!viewShotRef.current) {
@@ -57,46 +65,51 @@ const PayUScreen = () => {
         type: 'image/png',
         failOnCancel: false,
       });
-    } catch (error) {
-      console.error('QR share error:', error);
+    } catch (shareError) {
+      console.error('QR share error:', shareError);
       Alert.alert('Error', 'Unable to share QR code. Please try again.');
     }
   };
 
-  const fetchBankList = async () => {
-    setBankListLoading(true);
-    try {
-      const response = await BankService.BankList(
-        userData.tokenid,
-        Platform.OS === 'android' ? Platform.Version.toString() : '1',
-        userData.location || null
-      );
+  // Fetch bank list on screen focus
+  useEffect(() => {
+    const loadBankList = async () => {
+      setBankListLoading(true);
+      try {
+        const response = await BankService.BankList(
+          userData.tokenid,
+          Platform.OS === 'android' ? Platform.Version.toString() : '1',
+          userData.location || null
+        );
 
-      console.log('Bank List Response:', response.data);
+        console.log('Bank List Response:', response.data);
 
-      if (response.data.STATUSCODE === '1' && response.data.MESSAGE === 'SUCCESS') {
-        const activeUpibanks = response.data.BANKLIST.filter((bank) => {
-          const hasImage = typeof bank.images === 'string' && bank.images.trim().length > 0;
-          return bank.IsUpiActive === 1 && hasImage;
-        });
-        setBankList(activeUpibanks);
+        if (response.data.STATUSCODE === '1' && response.data.MESSAGE === 'SUCCESS') {
+          const activeUpibanks = (response.data.BANKLIST as BankItem[]).filter((bank: BankItem) => {
+            const hasImage = typeof bank.images === 'string' && bank.images.trim().length > 0;
+            return bank.IsUpiActive === 1 && hasImage;
+          });
+          setBankList(activeUpibanks);
 
-        // Select first bank by default
-        if (activeUpibanks.length > 0) {
-          setSelectedBank(activeUpibanks[0]);
+          if (activeUpibanks.length > 0) {
+            setSelectedBank(activeUpibanks[0]);
+          } else {
+            setSelectedBank(null);
+          }
         } else {
-          setSelectedBank(null);
+          Alert.alert('Error', 'Failed to load bank list');
         }
-      } else {
-        Alert.alert('Error', 'Failed to load bank list');
+      } catch (fetchError) {
+        console.error('Bank List Error:', fetchError);
+      } finally {
+        setBankListLoading(false);
       }
-    } catch (error) {
-      console.error('Bank List Error:', error);
-      // Network error toast already shown by API interceptor
-    } finally {
-      setBankListLoading(false);
+    };
+
+    if (isFocused) {
+      loadBankList();
     }
-  };
+  }, [isFocused, userData.location, userData.tokenid]);
 
   const validateAmount = (value: string): boolean => {
     const numValue = parseFloat(value);
@@ -133,6 +146,21 @@ const PayUScreen = () => {
     return true;
   };
 
+  const validateReference = (value: string): boolean => {
+    if (!value || value.trim() === '') {
+      setReferenceError('Please enter UTR / reference number');
+      return false;
+    }
+
+    if (value.trim().length < 6) {
+      setReferenceError('Please enter a valid UTR / reference number');
+      return false;
+    }
+
+    setReferenceError('');
+    return true;
+  };
+
   const handleAmountChange = (value: string) => {
     // Allow only numbers and decimal point
     const sanitized = value.replace(/[^0-9.]/g, '');
@@ -155,6 +183,17 @@ const PayUScreen = () => {
     setAmount(quickAmount.toString());
     setSelectedQuickAmount(quickAmount);
     validateAmount(quickAmount.toString());
+  };
+
+  const handleReferenceChange = (value: string) => {
+    const formatted = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    setReference(formatted);
+
+    if (formatted) {
+      validateReference(formatted);
+    } else {
+      setReferenceError('');
+    }
   };
 
   const handlePayment = async () => {
@@ -193,7 +232,49 @@ const PayUScreen = () => {
     setIsLoading(false);
   };
 
+  const handleSubmitReference = async () => {
+    if (!validateAmount(amount)) {
+      return;
+    }
+
+    if (!selectedBank) {
+      Alert.alert('Error', 'Please select a payment method');
+      return;
+    }
+
+    if (!validateReference(reference)) {
+      return;
+    }
+
+    const payload = {
+      Tokenid: userData.tokenid,
+      RequestTo: 'Admin',
+      Amount: amount,
+      SecAmt: null,
+      Mode: 4,
+      Bankid: selectedBank.Bankid,
+      WalletType: 1,
+      RefrenceNo: reference.trim(),
+      Remark: 'PayU UPI Payment',
+      Response: null,
+      Version: Platform.OS === 'android' ? Platform.Version.toString() : '1',
+      Location: userData.Location || userData.location || null,
+    };
+
+    try {
+      setIsSubmittingReference(true);
+      const response = await BankService.PaymentRequest(payload);
+      navigation.navigate('ProgressScreen', { Time: response.data.Time });
+    } catch (submitError) {
+      console.error('Payment Request Error:', submitError);
+      Alert.alert('Error', 'Unable to submit UTR number. Please try again.');
+    } finally {
+      setIsSubmittingReference(false);
+    }
+  };
+
   const isPaymentDisabled = !amount || !!error || parseFloat(amount) < 10 || isLoading || !selectedBank;
+  const isSubmitDisabled = !amount || !!error || !selectedBank || !reference || !!referenceError || isSubmittingReference || isLoading;
 
   return (
     <GradientLayout>
@@ -232,6 +313,22 @@ const PayUScreen = () => {
                     : `Minimum amount: ₹${selectedBank.MinAmount || 10}`}
                 </Text>
               )}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Enter Reference Number</Text>
+              <View style={[styles.referenceInputWrapper, referenceError && styles.inputWrapperError]}>
+                <TextInput
+                  style={styles.referenceInput}
+                  placeholder="Enter Reference Number"
+                  placeholderTextColor="#999"
+                  value={reference}
+                  onChangeText={handleReferenceChange}
+                  autoCapitalize="characters"
+                  maxLength={30}
+                />
+              </View>
+              {referenceError ? <Text style={styles.errorText}>{referenceError}</Text> : null}
             </View>
 
             {/* Quick Amount Buttons */}
@@ -344,6 +441,14 @@ const PayUScreen = () => {
               )}
             </TouchableOpacity>
 
+            <View style={styles.submitButtonContainer}>
+              <CustomButton
+                title={isSubmittingReference ? 'Submitting...' : 'Submit UTR'}
+                onPress={handleSubmitReference}
+                disabled={isSubmitDisabled}
+              />
+            </View>
+
             {/* Info Text */}
             <View style={styles.infoContainer}>
               <Text style={styles.infoText}>
@@ -427,11 +532,36 @@ const styles = StyleSheet.create({
     padding: 0,
     paddingVertical: verticalScale(10),
   },
+  referenceInputWrapper: {
+    backgroundColor: '#fff',
+    borderRadius: moderateScale(12),
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: horizontalScale(16),
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  referenceInput: {
+    fontSize: moderateScale(16),
+    fontWeight: '600',
+    color: '#1a1a1a',
+    paddingVertical: verticalScale(14),
+  },
   errorText: {
     color: '#ff3b30',
     fontSize: moderateScale(12),
     marginTop: verticalScale(4),
     marginLeft: horizontalScale(8),
+  },
+  referenceHintText: {
+    color: '#666',
+    fontSize: moderateScale(11),
+    marginTop: verticalScale(6),
+    marginLeft: horizontalScale(8),
+    lineHeight: moderateScale(16),
   },
   limitText: {
     color: '#0066cc',
@@ -515,6 +645,9 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(12),
     color: '#fff',
     opacity: 0.9,
+  },
+  submitButtonContainer: {
+    marginBottom: verticalScale(20),
   },
 
   // Loading & Error Styles

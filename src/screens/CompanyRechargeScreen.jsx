@@ -15,6 +15,7 @@ import Contacts from 'react-native-contacts';
 
 const CompanyRechargeScreen = ({ route }) => {
     const { operator, mode, opcodenew, number, price, headingTitle, screenName } = route.params;
+    const shouldValidateMobileNumber = ['1', '4'].includes(String(mode));
     const [MobileNo, setMobileNo] = useState(operator.MobileNO ? operator.MobileNO : number || '');
     const [Amount, setAmount] = useState(price || '');
     const [loading, setLoading] = useState(false);
@@ -137,9 +138,10 @@ const openContacts = async () => {
 
         if (mobileNumber) {
             const sanitized = sanitizePhoneNumber(mobileNumber);
-            if (validateIndianMobileNumber(sanitized)) {
+            if (!shouldValidateMobileNumber || validateIndianMobileNumber(sanitized)) {
                 setMobileNo(sanitized);
                 setShowContactList(false);
+                setSearchQuery('');
             } else {
                 Alert.alert('Invalid Number', 'Please pick a valid 10-digit Indian number.');
             }
@@ -149,6 +151,10 @@ const openContacts = async () => {
     const sanitizePhoneNumber = (number) => {
         // Remove all non-digit characters
         let sanitized = number.replace(/\D/g, '');
+
+        if (!shouldValidateMobileNumber) {
+            return sanitized;
+        }
 
         // Remove +91 country code if present
         if (sanitized.startsWith('91') && sanitized.length > 10) {
@@ -170,7 +176,12 @@ const openContacts = async () => {
 
     const showConfirmation = () => {
         // Validate inputs before showing confirmation
-        if (!MobileNo || MobileNo.length !== 10) {
+        if (!MobileNo) {
+            Alert.alert('Invalid Number', 'Please enter a valid number.');
+            return;
+        }
+
+        if (shouldValidateMobileNumber && MobileNo.length !== 10) {
             Alert.alert('Invalid Number', 'Please enter a valid 10-digit mobile number.');
             return;
         }
@@ -198,16 +209,19 @@ const openContacts = async () => {
                 
                 // Handle modal based on STATUSCODE
                 if (result && result.data) {
-                    const statusCode = result.data.STATUSCODE;
+                    const statusCode = String(result.data.STATUSCODE ?? '').trim();
+                    const statusText = String(result.data.STATUS ?? '').trim().toUpperCase();
                     const message = result.data.MESSAGE || result.message || 'Recharge processed.';
+                    const isSuccess = result.success || statusCode === '1' || statusText === 'SUCCESS';
+                    const isFailed = statusCode === '3' || ['FAILED', 'FAILURE', 'ERROR'].includes(statusText);
                     
                     setShowConfirmationModal(false);
                     
-                    if (statusCode === '1' || statusCode === 1) {
+                    if (isSuccess) {
                         // Success
                         setSuccessModalType('success');
                         setSuccessModalMessage(`₹${Amount} recharged to ${MobileNo}\n\n${message}`);
-                    } else if (statusCode === '3' || statusCode === 3) {
+                    } else if (isFailed) {
                         // Failed
                         setSuccessModalType('error');
                         setSuccessModalMessage(`${message}`);
@@ -220,7 +234,7 @@ const openContacts = async () => {
                     setSuccessModalVisible(true);
                     
                     // Reset fields after successful recharge
-                    if (statusCode === "1" || statusCode === 1) {
+                    if (isSuccess) {
                         setTimeout(() => {
                             setAmount('');
                         }, 3000);
@@ -401,10 +415,13 @@ const openContacts = async () => {
                                     keyboardType="numeric"
                                     value={MobileNo}
                                     onChangeText={(text) => {
-                                        const formattedText = text.replace(/\D/g, '').substring(0, 10);
+                                        const numericText = text.replace(/\D/g, '');
+                                        const formattedText = shouldValidateMobileNumber
+                                            ? numericText.substring(0, 10)
+                                            : numericText;
                                         setMobileNo(formattedText);
                                     }}
-                                    maxLength={10}
+                                    maxLength={shouldValidateMobileNumber ? 10 : undefined}
                                     textContentType="telephoneNumber"
                                     importantForAutofill="yes"
                                 />

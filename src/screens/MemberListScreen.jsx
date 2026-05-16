@@ -31,6 +31,15 @@ export default function MemberListScreen() {
   const navigation = useNavigation();
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const formatBalance = (balance) => {
+    const numericBalance = Number(balance);
+
+    if (Number.isNaN(numericBalance)) {
+      return balance ?? "0.00";
+    }
+
+    return numericBalance.toFixed(2);
+  };
   useEffect(() => {
     const MemberList = async () => {
       setLoading(true);
@@ -93,8 +102,10 @@ export default function MemberListScreen() {
   const renderItem = ({ item }) => {
     return (
       <View style={styles.card}>
-        <Text style={styles.name}>{item.FullName}</Text>
-  
+        <View style={styles.nameRow}>
+          <Text style={styles.name}>{item.FullName}</Text>
+          <Text style={styles.balance}>₹ {formatBalance(item.Balance)}</Text>
+        </View>
         <View style={styles.row}>
           <Text>📧</Text>
           <Text style={styles.text}>{item.Email}</Text>
@@ -115,7 +126,7 @@ export default function MemberListScreen() {
             <Text style={styles.text}>User ID: {item.Userid}</Text>
           </View>
           <View>
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('WalletTopup', { userId: item.Userid,users: data })}>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('WalletTopup', { userId: item.Userid, users: data, amount: item.Balance })}>
               <Text style={styles.buttonText}>Wallet Topup</Text>
             </TouchableOpacity>
           </View>
@@ -194,6 +205,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#1E88E5",
+    marginBottom: 10,
+  },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  balance: {
+    fontSize: moderateScale(15),
+    fontWeight: "700",
+    color: "#0F766E",
     marginBottom: 10,
   },
   row: {
